@@ -14,7 +14,7 @@ const ai = new OpenAI({
 const conversations = {};
 const userState = {};
 const MAX_HISTORY = 20;
-const CLINIC_NUMBER = "917012121125";
+const CLINIC_NUMBER = "919526271338";
 
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are the AI Assistant for ABCD Beauty Clinic & Salon.
@@ -332,8 +332,12 @@ app.post("/webhook", async (req, res) => {
       await sendWhatsAppMessage(from, reply);
 
       // Check booking complete → notify clinic
+      console.log("Checking booking complete. Reply was:", reply.substring(0, 100));
+      console.log("isBookingComplete result:", isBookingComplete(reply));
       if (isBookingComplete(reply)) {
+        console.log("Booking detected! Extracting details...");
         const details = await extractBookingDetails(from, from);
+        console.log("Booking details:", JSON.stringify(details));
         await sendBookingNotification(details);
         console.log("Booking notification sent to clinic!");
       }
