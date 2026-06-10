@@ -31,7 +31,7 @@ PERSONALITY
 LANGUAGE
 - Detect what language the customer is writing in and reply in the same language
 - If they write in Malayalam, reply in Malayalam
-- If they write in Manglish (Malayalam words in English letters), reply in Manglish the same way
+- - If they write in Manglish (Malayalam words written using English/Latin letters like "enthanu charge", "booking cheyyano"), you MUST reply in Manglish the same way — Malayalam words spelled in English letters. NEVER reply in Malayalam script when the user wrote in English letters.
 - If they write in English, reply in English
 - Never mix languages unless the customer does first
 
@@ -270,7 +270,7 @@ async function sendWhatsAppMessage(to, message) {
   }
 }
 // ─── GET AI REPLY ─────────────────────────────────────────────────────────────
-async function getAIReply(userPhone, userMessage) {
+async function getAIReply(userPhone, userMessage, currentDate) {
   if (!conversations[userPhone]) {
     conversations[userPhone] = [];
   }
@@ -286,7 +286,7 @@ async function getAIReply(userPhone, userMessage) {
       model: "google/gemini-2.0-flash",
       max_tokens: 500,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: SYSTEM_PROMPT + `\n\nCURRENT DATE & TIME: ${currentDate} (IST). Use this to understand relative dates like "tomorrow", "today", "this evening".` },
         ...conversations[userPhone],
       ],
     });
@@ -310,9 +310,9 @@ app.post("/webhook", async (req, res) => {
     const body = req.body;
     console.log("Incoming webhook:", JSON.stringify(body, null, 2));
 
-   const from = body.from || body.sender || body.phone;
-   const messageText = body.message?.text || body.message || body.text || body.body;
-   const messageType = body.message?.type || body.type || "text";
+    const from = body.from || body.sender || body.phone;
+    const messageText = body.message?.text || body.message || body.text || body.body;
+    const messageType = body.message?.type || body.type || "text";
 
     if (!from || !messageText || messageType !== "text") {
       console.log("Skipping non-text or invalid message");
@@ -321,7 +321,8 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`Message from ${from}: ${messageText}`);
 
-    const reply = await getAIReply(from, messageText);
+    const currentDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata' });
+const reply = await getAIReply(from, messageText, currentDate);
     await sendWhatsAppMessage(from, reply);
 
   } catch (err) {
