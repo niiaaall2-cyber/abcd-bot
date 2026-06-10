@@ -163,10 +163,9 @@ async function sendWhatsAppMessage(to, message) {
 
 // ─── SEND BOOKING NOTIFICATION ────────────────────────────────────────────────
 async function sendBookingNotification(details) {
-  const msg = `🔔 *New Booking Request!*\n\n👤 Name: ${details.name}\n📱 Phone: ${details.phone}\n📍 Location: ${details.location}\n💆 Service: ${details.service}\n📅 Date: ${details.date}\n⏰ Time: ${details.time}\n👥 Section: ${details.section}`;
+  const msg = `New Booking Request!\n\nName: ${details.name}\nPhone: ${details.phone}\nLocation: ${details.location}\nService: ${details.service}\nDate: ${details.date}\nTime: ${details.time}\nSection: ${details.section}`;
   await sendWhatsAppMessage(CLINIC_NUMBER, msg);
 }
-
 // ─── SERVICE MENU ─────────────────────────────────────────────────────────────
 function getServiceMenu() {
   return `എന്ത് സർവീസ് ആണ് വേണ്ടത്? Type the number to select 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
