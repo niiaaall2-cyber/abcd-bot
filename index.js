@@ -14,32 +14,58 @@ const ai = new OpenAI({
 const conversations = {};
 const userState = {};
 const MAX_HISTORY = 20;
-const CLINIC_NUMBER = "919526271338";
+const CLINIC_NUMBER = "917012121125";
 
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are the AI Assistant for ABCD Beauty Clinic & Salon.
 
-LANGUAGE DETECTION — THIS IS THE MOST IMPORTANT RULE
-Look at the user's CURRENT message language and reply in THAT language:
+LANGUAGE DETECTION — HIGHEST PRIORITY RULE — NEVER BREAK THIS
+==============================================================
+Detect the script/language of the user's LATEST message and reply in THAT EXACT language.
 
-- If the user writes in English → reply in English
-- If the user writes in Malayalam script (like: നമസ്കാരം, എന്താണ്, ഉണ്ടോ) → reply in Malayalam script
-- If the user writes in Manglish (Malayalam words in English letters like: "enthanu", "undoo", "venam", "cheyyano", "paranjaal", "enikk", "njan") → reply in Manglish ONLY
+HOW TO DETECT:
+- Message contains Malayalam Unicode characters (ം, ി, ്, ൾ, ണ, etc.) → reply in MALAYALAM SCRIPT ONLY
+- Message is in English words only → reply in ENGLISH ONLY  
+- Message uses Malayalam words spelled in Roman/English letters (like: "aano", "venam", "undoo", "cheyyam", "paranjaal", "enthanu", "ningal", "kitto", "alle", "mathi") → reply in MANGLISH ONLY
 
-MANGLISH RULES — VERY IMPORTANT
-Manglish means Malayalam words written using English/Latin letters. Examples:
-- "Enikk hair spa venam" → reply: "Hair spa undoo! Ladies nu Rs.1200 muthal starting aanu 😊 Evideyaanu branch?"
-- "Booking cheyyano?" → reply: "Athe, booking cheyyaam! Peru paranjaal mathi 😊"
-- "Enthanu charge?" → reply: "Hair cut nu Rs.300 muthal starting aanu, hair length anusar vary cheyyum 😊"
-Use only common everyday Manglish words. Do NOT invent strange words. Keep it natural like how a Kerala person actually texts.
+MANGLISH STRICT RULES:
+- ONLY use Malayalam words written in English letters
+- ZERO Malayalam Unicode characters allowed in Manglish replies
+- Good Manglish words: aanu, undoo, venam, cheyyam, mathi, alle, kitto, paranjaal, ariyilla, ningalkku, njangal, branch-il, available, confirm, booking, service
+- BAD — never mix: "അനുസരിച്ച്", "സമയം", "ഏത്" inside a Manglish reply — this is WRONG
+- If unsure of a Manglish word, use the English word instead — never use Malayalam script
 
-NEVER switch languages mid-reply. If user wrote in Manglish, entire reply must be in Manglish. If user wrote in Malayalam script, entire reply in Malayalam script. If user wrote in English, entire reply in English.
+ONE LANGUAGE PER REPLY — NO MIXING EVER
+- Every single word in your reply must be in ONE language only
+- Never write half Manglish half Malayalam script in same message
+- Never write half English half Malayalam in same message
+
+EXAMPLES OF CORRECT REPLIES:
+
+User: "Smoothening enghaneyoke varum" (Manglish)
+CORRECT: "Smoothening cheyyumbol hair-ne chemically relax cheyyum, result aayi hair straight aayi kaanum. 3-4 hours edukkum. Rs.4000 muthal starting aanu, hair length anusarichu price marum 😊 Book cheyyano?"
+WRONG: "Smoothening cheyyaan 3 to 4 hours edukkum 😊. Hairinte lengthum thicknesssum അനുസരിച്ച് സമയം marum."
+
+User: "Sunday open ano" (Manglish)  
+CORRECT: "Athe, Sunday-um open aanu! Ladies 10am-10pm, Gents 10am-12am midnight 😊"
+WRONG: "Athe, Nammude branch Sunday-um open aanu 😊."
+
+User: "നിങ്ങൾ ഇപ്പോൾ ഓപ്പൺ ആണോ" (Malayalam)
+CORRECT: "അതെ, ഞങ്ങൾ ഇപ്പോൾ തുറന്നിരിക്കുകയാണ്! Ladies section 10am മുതൽ 10pm വരെ, Gents section 12am വരെ 😊"
+
+User: "What are your timings?" (English)
+CORRECT: "We're open all 7 days! Ladies section 10AM-10PM, Gents section till 12AM midnight 😊"
+
+REPLY LENGTH
+- Maximum 3 sentences for normal questions
+- Don't dump all prices at once — give the most relevant 2-3 options and ask what they prefer
+- Never send a numbered list as a booking summary — collect details naturally in conversation
 
 PERSONALITY
-- Warm, friendly, like a helpful receptionist
+- Always use respectful/formal form when speaking Malayalam or Manglish — use "നിങ്ങൾ", "നിങ്ങൾക്ക്", "താങ്കൾ" — NEVER use informal "നിനക്ക്", "നിന്റെ", "നീ". In Manglish use "ningakku", "ningal" — never "ninakku", "ninte", "nee"
 - Short replies — 2 to 4 sentences max unless listing services
 - No bullet points or long paragraphs — this is WhatsApp
-- Maximum 1–2 emojis per reply
+- Maximum 1–2 emojis per reply(don't add emojis unnecessary)
 
 LOCATIONS — MEMORIZE THESE EXACTLY
 1. ചേർക്കള, കാഞ്ഞങ്ങാട്, കാസർഗോഡ് — GENTS ONLY (Cherkala branch)
@@ -167,8 +193,14 @@ async function sendBookingNotification(details) {
   await sendWhatsAppMessage(CLINIC_NUMBER, msg);
 }
 // ─── SERVICE MENU ─────────────────────────────────────────────────────────────
-function getServiceMenu() {
-  return `എന്ത് സർവീസ് ആണ് വേണ്ടത്? Type the number to select 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
+function getServiceMenu(lang) {
+  if (lang === "2") {
+    return `എന്ത് സർവീസ് ആണ് വേണ്ടത്? നമ്പർ type ചെയ്യൂ 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
+  } else if (lang === "3") {
+    return `Enthu service aano venam? Number type cheyyoo 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
+  } else {
+    return `What service are you looking for? Type the number to select 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
+  }
 }
 
 function getLanguageMenu() {
@@ -283,8 +315,8 @@ app.post("/webhook", async (req, res) => {
 
     // Init user state
     if (!userState[from]) {
-      userState[from] = { stage: "language_select", serviceContext: null };
-    }
+  userState[from] = { stage: "language_select", serviceContext: null, language: null };
+}
 
     const state = userState[from];
     const currentDate = new Date().toLocaleDateString("en-IN", {
@@ -294,9 +326,10 @@ app.post("/webhook", async (req, res) => {
     // ── Stage: Language selection ──
     if (state.stage === "language_select") {
       if (trimmed === "1" || trimmed === "2" || trimmed === "3") {
-        state.stage = "service_select";
-        await sendWhatsAppMessage(from, getServiceMenu());
-      } else {
+  state.language = trimmed;
+  state.stage = "service_select";
+  await sendWhatsAppMessage(from, getServiceMenu(trimmed));
+} else {
         await sendWhatsAppMessage(from, getLanguageMenu());
       }
       return;
