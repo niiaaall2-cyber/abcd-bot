@@ -197,7 +197,7 @@ function getServiceMenu(lang) {
   if (lang === "2") {
     return `എന്ത് സർവീസ് ആണ് വേണ്ടത്? നമ്പർ type ചെയ്യൂ 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
   } else if (lang === "3") {
-    return `Enthu service aano venam? Number type cheyyoo 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
+    return `Enthu service aan vendath? Number type cheyyoo 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
   } else {
     return `What service are you looking for? Type the number to select 😊\n\n1️⃣ Hair Services\n2️⃣ Skin & Facial\n3️⃣ Manicure & Pedicure\n4️⃣ Waxing\n5️⃣ Bridal / Groom Package\n6️⃣ Aesthetic Clinical Treatment\n7️⃣ Book an Appointment\n8️⃣ Other / General Question`;
   }
