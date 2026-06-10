@@ -314,10 +314,13 @@ app.post("/webhook", async (req, res) => {
     const messageText = body.message?.text || body.message || body.text || body.body;
     const messageType = body.message?.type || body.type || "text";
 
-    if (!from || !messageText || messageType !== "text") {
-      console.log("Skipping non-text or invalid message");
-      return;
+   if (!from || !messageText || messageType !== "text") {
+    if (messageType === "audio") {
+        await sendWhatsAppMessage(from, "Hi Sorry, I can't process voice messages yet 😊 Please type your question and I'll be happy to help!");
     }
+    console.log("Skipping non-text or invalid message");
+    return;
+}
 
     console.log(`Message from ${from}: ${messageText}`);
 
