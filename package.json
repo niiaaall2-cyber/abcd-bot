@@ -1,0 +1,20 @@
+{
+  "name": "whatsapp-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "axios": "^1.17.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^6.42.0"
+  }
+}
