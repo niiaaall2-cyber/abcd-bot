@@ -310,9 +310,9 @@ app.post("/webhook", async (req, res) => {
     const body = req.body;
     console.log("Incoming webhook:", JSON.stringify(body, null, 2));
 
-    const from = body.from || body.sender || body.phone;
-    const messageText = body.message || body.text || body.body;
-    const messageType = body.type || "text";
+   const from = body.from || body.sender || body.phone;
+   const messageText = body.message?.text || body.message || body.text || body.body;
+   const messageType = body.message?.type || body.type || "text";
 
     if (!from || !messageText || messageType !== "text") {
       console.log("Skipping non-text or invalid message");
