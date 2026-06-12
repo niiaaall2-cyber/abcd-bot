@@ -390,6 +390,7 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
     const from = body.from || body.sender || body.phone;
+    console.log("FULL BODY:", JSON.stringify(body, null, 2));
     if (!from) return;
 
     const messageType = body.message?.type || body.type || "text";
