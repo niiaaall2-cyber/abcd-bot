@@ -599,26 +599,47 @@ async function sendServiceInfo(to, svcId, lang) {
   const svc = SERVICE_INFO[svcId];
   if (!svc) return false;
 
-  // Build message directly — no AI, no hallucination
-  let msg = "";
-
-  if (lang === "ML") {
-    msg = `*${svc.name}*\n\nനിരക്ക്: ${svc.price}\n\n${svc.benefits}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`;
-  } else if (lang === "MG") {
-    msg = `*${svc.name}*\n\nRate: ${svc.price}\n\n${svc.benefits}\n\nEe service book cheyyano? 😊`;
-  } else {
-    msg = `*${svc.name}*\n\nPrice: ${svc.price}\n\n${svc.benefits}\n\nWould you like to book an appointment for this? 😊`;
+  // For English — send directly, no AI needed
+  if (lang === "EN") {
+    const msg = `${svc.name}\n\nPrice: ${svc.price}\n\n${svc.benefits}\n\nWould you like to book an appointment for this? 😊`;
+    await sendText(to, msg);
+    return true;
   }
 
-  // Split into two messages if too long (ChatMitra has char limits)
+  // For Malayalam and Manglish — translate benefits only
+  const langInstruction = lang === "ML"
+    ? `Translate the following text to Malayalam script. Return ONLY the translated text, nothing else, no explanations, no preamble.`
+    : `Translate the following text to Manglish (Malayalam words written in English/Roman letters only — like "aanu", "undoo", "cheyyum", "kittum"). Return ONLY the translated text, nothing else. Zero Malayalam Unicode script characters.`;
+
+  let translatedBenefits = svc.benefits; // fallback to English if translation fails
+
+  try {
+    const response = await ai.chat.completions.create({
+      model: "google/gemini-2.0-flash",
+      max_tokens: 600,
+      messages: [{ role: "user", content: `${langInstruction}\n\nText to translate:\n${svc.benefits}` }]
+    });
+    translatedBenefits = response.choices[0].message.content.trim();
+  } catch (err) {
+    console.error("Translation error:", err?.message);
+    // Keep English benefits as fallback
+  }
+
+  // Build final message with translated benefits
+  let msg = "";
+  if (lang === "ML") {
+    msg = `${svc.name}\n\nനിരക്ക്: ${svc.price}\n\n${translatedBenefits}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`;
+  } else {
+    msg = `${svc.name}\n\nRate: ${svc.price}\n\n${translatedBenefits}\n\nEe service book cheyyano? 😊`;
+  }
+
+  // Split if too long
   const MAX_LEN = 1500;
   if (msg.length <= MAX_LEN) {
     await sendText(to, msg);
   } else {
-    // Send price + first part of benefits
-    const part1 = msg.substring(0, MAX_LEN).lastIndexOf('\n') > 0
-      ? msg.substring(0, msg.lastIndexOf('\n', MAX_LEN))
-      : msg.substring(0, MAX_LEN);
+    const splitAt = msg.lastIndexOf('\n', MAX_LEN);
+    const part1 = splitAt > 0 ? msg.substring(0, splitAt) : msg.substring(0, MAX_LEN);
     const part2 = msg.substring(part1.length).trim();
     await sendText(to, part1);
     await new Promise(r => setTimeout(r, 800));
