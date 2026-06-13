@@ -14,7 +14,7 @@ const ai = new OpenAI({
 const conversations = {};
 const userState = {};
 const MAX_HISTORY = 20;
-const CLINIC_NUMBER = "919526271338";
+const CLINIC_NUMBER = "917012121125";
 
 // ─── SEND TEXT ────────────────────────────────────────────────────────────────
 async function sendText(to, message) {
@@ -595,20 +595,46 @@ function getBookingPrompt(lang, serviceName) {
   return `\n\nWould you like to book an appointment for this? 😊`;
 }
 
-async function sendServiceInfo(to, svcId, lang, userPhone, currentDate) {
+async function sendServiceInfo(to, svcId, lang) {
   const svc = SERVICE_INFO[svcId];
   if (!svc) return false;
 
-  const prompt = `The customer selected "${svc.name}" (Price: ${svc.price}). 
-Write a warm, natural reply that includes:
-1. The service name and price
-2. The benefits of this service (use this info: ${svc.benefits})
-3. Ask if they want to book an appointment
+  const langInstruction = lang === "ML"
+    ? "Write ONLY in Malayalam script. Every word in Malayalam."
+    : lang === "MG"
+    ? "Write ONLY in Manglish — Malayalam words in English letters. Zero Malayalam script characters."
+    : "Write ONLY in English.";
 
-Keep it conversational, not like a list. Maximum 5 sentences.`;
+  const prompt = `${langInstruction}
 
-  const reply = await getAIReply(userPhone, prompt, currentDate, lang);
-  await sendText(to, reply);
+Write a warm WhatsApp message about this salon service. Include:
+1. Service name and price clearly
+2. Key benefits in 3-4 natural sentences
+3. End by naturally asking if they want to book an appointment (just ask yes/no — the booking flow will handle collecting details)
+
+Service: ${svc.name}
+Price: ${svc.price}
+Benefits info: ${svc.benefits}
+
+Keep it conversational and friendly. No bullet points. Complete the full message.`;
+
+  try {
+    const response = await ai.chat.completions.create({
+      model: "google/gemini-2.0-flash",
+      max_tokens: 800,
+      messages: [{ role: "user", content: prompt }]
+    });
+    const reply = response.choices[0].message.content;
+    await sendText(to, reply);
+  } catch (err) {
+    console.error("sendServiceInfo error:", err?.message);
+    const fallback = lang === "ML"
+  ? `${svc.name}\n\nനിരക്ക്: ${svc.price}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`
+  : lang === "MG"
+  ? `${svc.name}\n\nRate: ${svc.price}\n\nBook cheyyano? 😊`
+  : `${svc.name}\n\nPrice: ${svc.price}\n\nWould you like to book an appointment? 😊`;
+await sendText(to, fallback);
+  }
   return true;
 }
 
@@ -714,7 +740,7 @@ app.post("/webhook", async (req, res) => {
       // Service selected — show info + booking prompt
       if (buttonId && SERVICE_INFO[buttonId]) {
         state.stage = "chat";
-        await sendServiceInfo(from, buttonId, state.lang, from, currentDate);
+        await sendServiceInfo(from, buttonId, state.lang);
         return;
       }
 
