@@ -595,11 +595,20 @@ function getBookingPrompt(lang, serviceName) {
   return `\n\nWould you like to book an appointment for this? 😊`;
 }
 
-async function sendServiceInfo(to, svcId, lang) {
+async function sendServiceInfo(to, svcId, lang, userPhone, currentDate) {
   const svc = SERVICE_INFO[svcId];
   if (!svc) return false;
-  const msg = `${svc.name}\n\nPrice: ${svc.price}\n\n${svc.benefits}${getBookingPrompt(lang, svc.name)}`;
-  await sendText(to, msg);
+
+  const prompt = `The customer selected "${svc.name}" (Price: ${svc.price}). 
+Write a warm, natural reply that includes:
+1. The service name and price
+2. The benefits of this service (use this info: ${svc.benefits})
+3. Ask if they want to book an appointment
+
+Keep it conversational, not like a list. Maximum 5 sentences.`;
+
+  const reply = await getAIReply(userPhone, prompt, currentDate, lang);
+  await sendText(to, reply);
   return true;
 }
 
@@ -705,7 +714,7 @@ app.post("/webhook", async (req, res) => {
       // Service selected — show info + booking prompt
       if (buttonId && SERVICE_INFO[buttonId]) {
         state.stage = "chat";
-        await sendServiceInfo(from, buttonId, state.lang);
+        await sendServiceInfo(from, buttonId, state.lang, from, currentDate);
         return;
       }
 
