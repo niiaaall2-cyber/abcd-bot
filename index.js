@@ -589,51 +589,31 @@ async function getAIReply(userPhone, userMessage, currentDate, lang) {
 }
 
 // ─── SERVICE INFO REPLY ───────────────────────────────────────────────────────
-function getBookingPrompt(lang, serviceName) {
-  if (lang === "ML") return `\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`;
-  if (lang === "MG") return `\n\nEe service book cheyyano? 😊`;
-  return `\n\nWould you like to book an appointment for this? 😊`;
-}
+// Benefits are always shown in English regardless of selected language.
+// Broken/incomplete Malayalam translations were worse than clean English.
+// Only the service name label, price label, and booking prompt are localised.
 
 async function sendServiceInfo(to, svcId, lang) {
   const svc = SERVICE_INFO[svcId];
   if (!svc) return false;
 
-  // For English — send directly, no AI needed
-  if (lang === "EN") {
-    const msg = `${svc.name}\n\nPrice: ${svc.price}\n\n${svc.benefits}\n\nWould you like to book an appointment for this? 😊`;
-    await sendText(to, msg);
-    return true;
-  }
+  // Labels localised — benefits always English
+  let priceLabel, bookingPrompt;
 
-  // For Malayalam and Manglish — translate benefits only
-  const langInstruction = lang === "ML"
-    ? `Translate the following text to Malayalam script. Return ONLY the translated text, nothing else, no explanations, no preamble.`
-    : `Translate the following text to Manglish (Malayalam words written in English/Roman letters only — like "aanu", "undoo", "cheyyum", "kittum"). Return ONLY the translated text, nothing else. Zero Malayalam Unicode script characters.`;
-
-  let translatedBenefits = svc.benefits; // fallback to English if translation fails
-
-  try {
-    const response = await ai.chat.completions.create({
-      model: "google/gemini-2.0-flash",
-      max_tokens: 600,
-      messages: [{ role: "user", content: `${langInstruction}\n\nText to translate:\n${svc.benefits}` }]
-    });
-    translatedBenefits = response.choices[0].message.content.trim();
-  } catch (err) {
-    console.error("Translation error:", err?.message);
-    // Keep English benefits as fallback
-  }
-
-  // Build final message with translated benefits
-  let msg = "";
   if (lang === "ML") {
-    msg = `${svc.name}\n\nനിരക്ക്: ${svc.price}\n\n${translatedBenefits}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`;
+    priceLabel   = "നിരക്ക്";
+    bookingPrompt = "\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊";
+  } else if (lang === "MG") {
+    priceLabel   = "Rate";
+    bookingPrompt = "\n\nEe service book cheyyano? 😊";
   } else {
-    msg = `${svc.name}\n\nRate: ${svc.price}\n\n${translatedBenefits}\n\nEe service book cheyyano? 😊`;
+    priceLabel   = "Price";
+    bookingPrompt = "\n\nWould you like to book an appointment for this? 😊";
   }
 
-  // Split if too long
+  const msg = `${svc.name}\n\n${priceLabel}: ${svc.price}\n\n${svc.benefits}${bookingPrompt}`;
+
+  // Split if too long (WhatsApp 1500 char safe limit)
   const MAX_LEN = 1500;
   if (msg.length <= MAX_LEN) {
     await sendText(to, msg);
