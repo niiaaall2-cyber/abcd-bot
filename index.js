@@ -599,42 +599,32 @@ async function sendServiceInfo(to, svcId, lang) {
   const svc = SERVICE_INFO[svcId];
   if (!svc) return false;
 
-  const langInstruction = lang === "ML"
-    ? "Write ONLY in Malayalam script. Every word in Malayalam."
-    : lang === "MG"
-    ? "Write ONLY in Manglish — Malayalam words in English letters. Zero Malayalam script characters."
-    : "Write ONLY in English.";
+  // Build message directly — no AI, no hallucination
+  let msg = "";
 
-  const prompt = `${langInstruction}
-
-Write a warm WhatsApp message about this salon service. Include:
-1. Service name and price clearly
-2. Key benefits in 3-4 natural sentences
-3. End by naturally asking if they want to book an appointment (just ask yes/no — the booking flow will handle collecting details)
-
-Service: ${svc.name}
-Price: ${svc.price}
-Benefits info: ${svc.benefits}
-
-Keep it conversational and friendly. No bullet points. Complete the full message.`;
-
-  try {
-    const response = await ai.chat.completions.create({
-      model: "google/gemini-2.0-flash",
-      max_tokens: 800,
-      messages: [{ role: "user", content: prompt }]
-    });
-    const reply = response.choices[0].message.content;
-    await sendText(to, reply);
-  } catch (err) {
-    console.error("sendServiceInfo error:", err?.message);
-    const fallback = lang === "ML"
-  ? `${svc.name}\n\nനിരക്ക്: ${svc.price}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`
-  : lang === "MG"
-  ? `${svc.name}\n\nRate: ${svc.price}\n\nBook cheyyano? 😊`
-  : `${svc.name}\n\nPrice: ${svc.price}\n\nWould you like to book an appointment? 😊`;
-await sendText(to, fallback);
+  if (lang === "ML") {
+    msg = `*${svc.name}*\n\nനിരക്ക്: ${svc.price}\n\n${svc.benefits}\n\nഈ സർവീസ് ബുക്ക് ചെയ്യണോ? 😊`;
+  } else if (lang === "MG") {
+    msg = `*${svc.name}*\n\nRate: ${svc.price}\n\n${svc.benefits}\n\nEe service book cheyyano? 😊`;
+  } else {
+    msg = `*${svc.name}*\n\nPrice: ${svc.price}\n\n${svc.benefits}\n\nWould you like to book an appointment for this? 😊`;
   }
+
+  // Split into two messages if too long (ChatMitra has char limits)
+  const MAX_LEN = 1500;
+  if (msg.length <= MAX_LEN) {
+    await sendText(to, msg);
+  } else {
+    // Send price + first part of benefits
+    const part1 = msg.substring(0, MAX_LEN).lastIndexOf('\n') > 0
+      ? msg.substring(0, msg.lastIndexOf('\n', MAX_LEN))
+      : msg.substring(0, MAX_LEN);
+    const part2 = msg.substring(part1.length).trim();
+    await sendText(to, part1);
+    await new Promise(r => setTimeout(r, 800));
+    await sendText(to, part2);
+  }
+
   return true;
 }
 
