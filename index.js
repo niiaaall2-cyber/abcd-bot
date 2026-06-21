@@ -514,37 +514,75 @@ const MENUS = {
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 function getSystemPrompt(lang) {
   const langRule = lang === "ML"
-    ? `LANGUAGE RULE: Reply ONLY in Malayalam script. Every word in Malayalam. ZERO English or Manglish unless it's a brand name like ABCD, Keratin, Rs.`
+    ? `LANGUAGE RULE: Reply ONLY in Malayalam script. Every single word must be in Malayalam. ZERO English or Manglish unless it is a brand name (ABCD, Keratin, Rs.) or proper noun. Never break this rule.`
     : lang === "MG"
-    ? `LANGUAGE RULE: Reply ONLY in Manglish — Malayalam words in English/Roman letters. Examples: "aanu", "undoo", "venam", "cheyyam", "mathi", "alle", "kitto", "ningalkku", "enthanu". ZERO Malayalam Unicode script. If unsure of Manglish word, use English word instead.`
+    ? `LANGUAGE RULE: Reply ONLY in Manglish — Malayalam words in English/Roman letters ONLY. Examples: "aanu", "undoo", "venam", "cheyyam", "mathi", "alle", "kitto", "ningalkku", "enthanu". ZERO Malayalam Unicode script. If unsure of a word use English instead.`
     : `LANGUAGE RULE: Reply ONLY in English.`;
 
   return `You are the AI assistant for ABCD Beauty Clinic & Salon, Kasaragod, Kerala.
 
 ${langRule}
 
-PERSONALITY: Warm, friendly, knowledgeable. Max 3 sentences for normal replies. No bullet points.
+LANGUAGE SWITCHING: If the user asks to switch language (e.g. "switch to English", "Malayalam il mathi", "change to Manglish", "English il paranjaal mathi"), switch to that language immediately for all future replies and confirm the switch.
+
+PERSONALITY: Warm, friendly, specific. Max 3 sentences for simple questions. No bullet points. Answer ONLY what the user asked — nothing extra.
+
+STRICT REPLY RULE: Only answer what the user actually asked. If they ask about keratin price, give only keratin price. If they ask about haircut, give only haircut info. Never give unrelated information in the same reply.
 
 LOCATIONS:
-- ചേർക്കള, കാഞ്ഞങ്ങാട് — GENTS ONLY
-- കാഞ്ഞങ്ങാട് (main branch) — GENTS AND LADIES
-Spellings: ചേർക്കള and കാഞ്ഞങ്ങാട് only. NEVER ചേർത്തല.
+- Cherkala (Cherkkala), Kanhangad — GENTS ONLY
+- Kanhangad (main branch) — GENTS AND LADIES
+Malayalam spellings: ചേർക്കള and കാഞ്ഞങ്ങാഡ് only. NEVER ചേർത്തല.
 
 CONTACT: 7012121125 | Hours: Ladies 10AM-10PM, Gents 10AM-12AM | Open all 7 days
 
-BOOKING FLOW — collect naturally one by one:
+PRICE QUERIES:
+- Specific service price asked: give that service price only, clearly and directly.
+- Full category price list asked: give the complete list for that category only.
+- Never make up prices.
+
+BOOKING FLOW — HIGHEST PRIORITY:
+When user says yes to booking, or wants to book, or confirms they want an appointment — IMMEDIATELY start collecting details. Do not ask any other questions first.
+Collect one by one:
 1. Full name
-2. Location (Cherkala-Gents only / Kanhangad-Gents & Ladies)
+2. Location — Cherkala (Gents only) or Kanhangad (Gents and Ladies)
 3. Service
-4. Date (use today's date to resolve "tomorrow", "today")
-5. Time
-6. Section (only for Kanhangad)
-Confirm: "Thank you [Name]! Booking request received. Our team will contact you shortly to confirm. Call 7012121125 for urgent bookings."
+4. Preferred date (use today date context to resolve tomorrow, today, this evening)
+5. Preferred time
+6. Section — Ladies or Gents (only if Kanhangad)
+Confirm with: "Thank you [Name]! Booking request received. Our team will contact you shortly to confirm. For urgent bookings call 7012121125."
+Never confirm or guarantee a slot yourself.
 
-When asked to call or speak to someone: "Our team will call you back shortly! You can also reach us at 7012121125 😊"
-When confused or unsure: "For this please contact our team at 7012121125 😊"`;
+CALLBACK FLOW:
+When user asks to speak to team, get a call, or contact someone:
+- Ask for their phone number first in their language so team can call them back
+- When they give their number, confirm team will call back shortly
+- Then the system sends a notification to clinic automatically
+
+PRICES KNOWLEDGE:
+LADIES HAIRCUTS: U Cut Rs.400, V Cut Rs.400, Straight Cut Rs.300, Layer Cut Rs.600, Step Cut Rs.600, Feathered Cut Rs.700, Bob Cut Rs.700, Blend Cut Rs.600, Pixie Cut Rs.800, Inverted Bob Rs.800, Graduated Bob Rs.800
+KIDS: Layer Rs.600, Bob Rs.500, Butterfly Rs.700, Feather Rs.700, Baby Cut Rs.200-300
+LADIES COLOUR: Global Rs.2200, Touch Up Rs.1500, Highlights Rs.300/strip, Fashion Global Rs.3000+, Balayage Rs.4000+, Ombre Rs.3500+
+LADIES HAIR TREATMENTS: Smoothening Rs.4000, Keratin Rs.6000, Botox Rs.7000, Kera Smooth Rs.10000, Crown Smoothening Rs.3000, Route Touch Up Rs.3500, Nanoplasty Rs.8000+, Shine Infusion Rs.5000, Hair Ironing Rs.1000+, Tong Curls Rs.1500+
+LADIES HAIR SPA: Nourishing Rs.1200+, Protein Rs.2000, Moroccan Rs.2500
+LADIES DANDRUFF: Basic Rs.2000, Premium Rs.2500
+LADIES SKIN: Basic Facial Rs.1500, Premium Rs.2500, Luxury Rs.4000, Hydra Facial Rs.4000, Hydra Treatment Rs.5000, Hydra Premium Rs.8000
+LADIES FACE: Cleanup Basic Rs.600, Premium Rs.1000, De Tan Basic Rs.500, Premium Rs.1000, Glow Cleanup Rs.1500, Bleach Rs.400, Face Massage Rs.800+
+LADIES WAXING: Half Arm Rs.500, Half Leg Rs.700, Full Arm Rs.800, Full Leg Rs.1200, Full Body Rs.4000, Upper Lip Rs.150, Full Face Rs.500, Under Arms Rs.500
+LADIES MANI/PEDI: Ordinary Mani Rs.500/Pedi Rs.900, Classic Mani Rs.700/Pedi Rs.1300, Premium Mani Rs.1500/Pedi Rs.2000
+LADIES BRIDAL: Silver Rs.5999, Platinum Rs.9999, Diamond Rs.14999
+KOREAN/CLINICAL: Hydra Facial Rs.3500, Hydra Basic Rs.5000, Hydra Premium Rs.8000, Carbon Laser Rs.6000, IPL Rs.5500, IPL Hair Removal Rs.1500, Micro Needling Face/Hair Rs.6000, Mesotherapy Rs.4000, BB Glow Rs.6000, Chemical Peel Rs.2000+, Oxygeno Rs.6000, Skin Tightening Rs.3000, Tattoo Removal Rs.2500, Micro Blading Rs.10000/8000/4000, Lip Neutralizing Rs.4000, Lip Colouring Rs.6000, Eye Brow Shading Rs.4000
+GENTS HAIRCUT CLASSIC: Cut Rs.200, Beard Rs.200, Cut+Shave Rs.350
+GENTS HAIRCUT LUXURY: Cut Rs.300, Beard Rs.300, Cut+Shave+Wash Rs.500
+GENTS STYLING: Wash Rs.100, Setting Rs.150, Blow Dry+Setting Rs.200, Blow Dry+Powder Rs.400, Blow Dry+Fiber Rs.500
+GENTS HAIR TREATMENTS: Smoothening Rs.1500+, Keratin Rs.4000+, Botox Rs.5000+, Kera Smooth Rs.6000+, Curling Rs.4500+, Nanoplasty Rs.8000+, Shine Infusion Rs.5000
+GENTS HAIR SPA: Basic Rs.1200+, Premium Rs.1500+, Moroccan Rs.2000+
+GENTS DANDRUFF: Basic Rs.1500+, Premium Rs.2500+
+GENTS COLOUR: Gray Coverage Rs.800+, Ammonia Free Rs.1000+, Beard Rs.300+, Fashion Rs.1500+, Cap Highlights Rs.2000+
+GENTS MASSAGE: Oil+Wash Rs.500, Normal Rs.300
+GENTS MANI/PEDI: Same as ladies
+GROOM PACKAGES: Glow Groom Rs.3700, Gold Glow Up Rs.5000, Booster custom price`;
 }
-
 // ─── GET AI REPLY ─────────────────────────────────────────────────────────────
 async function getAIReply(userPhone, userMessage, currentDate, lang) {
   if (!conversations[userPhone]) conversations[userPhone] = [];
@@ -628,6 +666,42 @@ async function sendMenu(to, menuId) {
   return true;
 }
 
+// ─── DETECT LANGUAGE SWITCH ──────────────────────────────────────────────────
+function detectLanguageSwitch(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('switch to english') || m.includes('english il') || m.includes('in english') || m.includes('english mathi') || m.includes('english paranjaal')) return 'EN';
+  if (m.includes('malayalam il') || m.includes('in malayalam') || m.includes('malayalam mathi') || m.includes('switch to malayalam')) return 'ML';
+  if (m.includes('manglish il') || m.includes('in manglish') || m.includes('manglish mathi') || m.includes('switch to manglish')) return 'MG';
+  return null;
+}
+
+// ─── DETECT CALLBACK REQUEST ──────────────────────────────────────────────────
+function isCallbackRequest(userMsg) {
+  const m = userMsg.toLowerCase();
+  const hasPhone = /[6-9]\d{9}/.test(userMsg);
+  const askedCall = m.includes('call') || m.includes('contact') || m.includes('speak') ||
+    m.includes('\u0d35\u0d3f\u0d33\u0d3f') || m.includes('nmber') || m.includes('number');
+  return hasPhone || askedCall;
+}
+
+// ─── SEND POST-SERVICE BUTTONS ────────────────────────────────────────────────
+async function sendPostServiceButtons(to, lang) {
+  const texts = {
+    EN: "What would you like to do next?",
+    ML: "\u0d07\u0d28\u0d3f \u0d0e\u0d28\u0d4d\u0d24\u0d4d \u0d35\u0d47\u0d23\u0d02?",
+    MG: "Pinne enthu cheyyano?"
+  };
+  const btn1 = { EN: "Book Now", ML: "\u0d2c\u0d41\u0d15\u0d4d\u0d15\u0d4d \u0d1a\u0d46\u0d2f\u0d4d\u0d2f\u0d42", MG: "Book Cheyyam" };
+  const btn2 = { EN: "More Services", ML: "\u0d2e\u0d31\u0d4d\u0d31\u0d4d \u0d38\u0d47\u0d35\u0d28\u0d19\u0d4d\u0d19\u0d7e", MG: "More Services" };
+  const btn3 = { EN: "Talk to Team", ML: "\u0d1f\u0d40\u0d2e\u0d3f\u0d28\u0d4b\u0d1f\u0d4d \u0d38\u0d02\u0d38\u0d3e\u0d30\u0d3f\u0d15\u0d4d\u0d15\u0d3e\u0d02", MG: "Team-nod Saari" };
+  const l = lang || 'EN';
+  await sendButtons(to, texts[l] || texts.EN, [
+    { id: "PSB_BOOK", title: btn1[l] || btn1.EN },
+    { id: "PSB_MORE", title: btn2[l] || btn2.EN },
+    { id: "PSB_TEAM", title: btn3[l] || btn3.EN }
+  ]);
+}
+
 // ─── WEBHOOK ──────────────────────────────────────────────────────────────────
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
@@ -640,48 +714,107 @@ app.post("/webhook", async (req, res) => {
     let buttonId = body.replyId || null;
     const messageText = buttonId || body.message?.text || body.message || body.text || body.body;
 
-    if (messageType === "audio") { await sendText(from, "Sorry, voice messages support cheyyunilla 😊 Please type cheyyoo! Or call: 7012121125"); return; }
+    if (messageType === "audio") {
+      await sendText(from, "Sorry, voice messages support cheyyunilla. Please type cheyyoo! Or call: 7012121125");
+      return;
+    }
     if (!messageText || (messageType !== "text" && messageType !== "interactive")) return;
 
     console.log(`From ${from} [${messageType}]: ${messageText}`);
 
-    if (!userState[from]) userState[from] = { stage: "language", lang: null };
-    const state = userState[from];
-    const currentDate = new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Kolkata" });
+    // ── FIX 1: Never reset existing session — only init if truly new ──
+    if (!userState[from]) {
+      userState[from] = { stage: "language", lang: null, section: null };
+    }
 
-    // ── LANGUAGE SELECTION ──
+    const state = userState[from];
+    const currentDate = new Date().toLocaleDateString("en-IN", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Kolkata"
+    });
+
+    // ── FIX 6: Language switch detection at any stage ──
+    if (!buttonId && state.stage === "chat") {
+      const switchLang = detectLanguageSwitch(messageText);
+      if (switchLang) {
+        state.lang = switchLang;
+        const confirmMsg = {
+          EN: "Switched to English! How can I help you? 😊",
+          ML: "\u0d07\u0d28\u0d3f \u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d24\u0d4d\u0d24\u0d3f\u0d32\u0d4d \u0d2e\u0d31\u0d41\u0d2a\u0d1f\u0d3f \u0d05\u0d31\u0d3f\u0d2f\u0d3f\u0d15\u0d4d\u0d15\u0d3e\u0d02 😊",
+          MG: "Manglish-il aayittundo! Enthu help cheyyano? 😊"
+        };
+        await sendText(from, confirmMsg[switchLang]);
+        return;
+      }
+    }
+
+    // ── STAGE: LANGUAGE SELECTION ──
     if (state.stage === "language") {
       if (buttonId === "LANG_EN" || buttonId === "LANG_ML" || buttonId === "LANG_MG") {
         state.lang = buttonId === "LANG_EN" ? "EN" : buttonId === "LANG_ML" ? "ML" : "MG";
         state.stage = "section";
-        const texts = { EN: "Which section are you looking for?", ML: "ഏത് സെക്ഷൻ ആണ് വേണ്ടത്?", MG: "Enth section aano venam?" };
-        await sendButtons(from, texts[state.lang], [{ id: "SEC_LADIES", title: "Ladies" }, { id: "SEC_GENTS", title: "Gents" }, { id: "SEC_BOTH", title: "Both" }]);
+        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Enth section aano venam?" };
+        await sendButtons(from, texts[state.lang], [
+          { id: "SEC_LADIES", title: "Ladies" },
+          { id: "SEC_GENTS", title: "Gents" },
+          { id: "SEC_BOTH", title: "Both" }
+        ]);
       } else {
-        await sendButtons(from, "hi, ABCD Beauty Clinic & Salon-ലേക്ക് സ്വാഗതം! 🙏\n\nPlease select your language:", [{ id: "LANG_EN", title: "English" }, { id: "LANG_ML", title: "Malayalam" }, { id: "LANG_MG", title: "Manglish" }]);
+        await sendButtons(from, "hi, ABCD Beauty Clinic & Salon-\u0d32\u0d47\u0d15\u0d4d\u0d15\u0d4d \u0d38\u0d4d\u0d35\u0d3e\u0d17\u0d24\u0d02! \ud83d\ude4f\n\nPlease select your language:", [
+          { id: "LANG_EN", title: "English" },
+          { id: "LANG_ML", title: "Malayalam" },
+          { id: "LANG_MG", title: "Manglish" }
+        ]);
       }
       return;
     }
 
-    // ── SECTION SELECTION ──
+    // ── STAGE: SECTION SELECTION ──
     if (state.stage === "section") {
       if (buttonId === "SEC_LADIES" || buttonId === "SEC_GENTS" || buttonId === "SEC_BOTH") {
         state.section = buttonId;
         state.stage = "menu";
-        if (buttonId === "SEC_LADIES") { await sendMenu(from, "LADIES_MAIN"); }
-        else if (buttonId === "SEC_GENTS") { await sendMenu(from, "GENTS_MAIN"); }
-        else {
-          // Both — show ladies first then gents
-          await sendMenu(from, "LADIES_MAIN");
-        }
+        if (buttonId === "SEC_LADIES") await sendMenu(from, "LADIES_MAIN");
+        else if (buttonId === "SEC_GENTS") await sendMenu(from, "GENTS_MAIN");
+        else await sendMenu(from, "LADIES_MAIN");
       } else {
-        const texts = { EN: "Which section are you looking for?", ML: "ഏത് സെക്ഷൻ ആണ് വേണ്ടത്?", MG: "Enth section aano venam?" };
-        await sendButtons(from, texts[state.lang || "EN"], [{ id: "SEC_LADIES", title: "Ladies" }, { id: "SEC_GENTS", title: "Gents" }, { id: "SEC_BOTH", title: "Both" }]);
+        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Enth section aano venam?" };
+        await sendButtons(from, texts[state.lang || "EN"], [
+          { id: "SEC_LADIES", title: "Ladies" },
+          { id: "SEC_GENTS", title: "Gents" },
+          { id: "SEC_BOTH", title: "Both" }
+        ]);
       }
       return;
     }
 
-    // ── MENU / CHAT STAGE ──
+    // ── STAGE: MENU / CHAT ──
     if (state.stage === "menu" || state.stage === "chat") {
+
+      // ── FIX 3: Post-service buttons ──
+      if (buttonId === "PSB_BOOK") {
+        state.stage = "chat";
+        const reply = await getAIReply(from, "I want to book an appointment", currentDate, state.lang);
+        await sendText(from, reply);
+        return;
+      }
+
+      if (buttonId === "PSB_MORE") {
+        // Show the service menu again
+        if (state.section === "SEC_GENTS") await sendMenu(from, "GENTS_MAIN");
+        else await sendMenu(from, "LADIES_MAIN");
+        return;
+      }
+
+      if (buttonId === "PSB_TEAM") {
+        state.stage = "chat";
+        const askNum = {
+          EN: "Sure! Could you share your phone number so our team can call you back? \ud83d\ude0a",
+          ML: "\u0d24\u0d40\u0d7c\u0d1a\u0d4d\u0d1a\u0d2f\u0d3e\u0d2f\u0d41\u0d02! \u0d28\u0d3f\u0d19\u0d4d\u0d19\u0d33\u0d41\u0d1f\u0d46 \u0d28\u0d2e\u0d4d\u0d2a\u0d7c \u0d24\u0d30\u0d3e\u0d2e\u0d4b? \u0d1e\u0d19\u0d4d\u0d19\u0d33\u0d41\u0d1f\u0d46 \u0d1f\u0d40\u0d02 \u0d09\u0d1f\u0d7b \u0d35\u0d3f\u0d33\u0d3f\u0d15\u0d4d\u0d15\u0d41\u0d28\u0d4d\u0d28\u0d24\u0d3e\u0d23\u0d4d \ud83d\ude0a",
+          MG: "Sure! Ningalude number tharamo? Njangalude team undane call cheyyum \ud83d\ude0a"
+        };
+        await sendText(from, askNum[state.lang] || askNum.EN);
+        return;
+      }
 
       // Book appointment
       if (buttonId === "CAT_BOOK") {
@@ -697,28 +830,51 @@ app.post("/webhook", async (req, res) => {
         return;
       }
 
-      // Service selected — show info + booking prompt
+      // ── FIX 3: Service selected — show info then post-service buttons ──
       if (buttonId && SERVICE_INFO[buttonId]) {
         state.stage = "chat";
+        state.lastService = buttonId;
         await sendServiceInfo(from, buttonId, state.lang);
+        await new Promise(r => setTimeout(r, 1000));
+        await sendPostServiceButtons(from, state.lang);
         return;
       }
 
-      // Free text chat
+      // ── FIX 2 & 4: Free text in chat ──
       state.stage = "chat";
+
+      // Check for phone number shared (callback) 
+      const phoneMatch = messageText.match(/[6-9]\d{9}/);
+      if (phoneMatch && state.waitingForPhone) {
+        state.waitingForPhone = false;
+        const confirmMsg = {
+          EN: "Perfect! Our team will call you back shortly \ud83d\ude0a",
+          ML: "\u0d28\u0d28\u0d4d\u0d28\u0d3e\u0d2f\u0d3f! \u0d1e\u0d19\u0d4d\u0d19\u0d33\u0d41\u0d1f\u0d46 \u0d1f\u0d40\u0d02 \u0d09\u0d1f\u0d7b \u0d35\u0d3f\u0d33\u0d3f\u0d15\u0d4d\u0d15\u0d41\u0d28\u0d4d\u0d28\u0d24\u0d3e\u0d23\u0d4d \ud83d\ude0a",
+          MG: "Nannayyi! Team undane call cheyyum \ud83d\ude0a"
+        };
+        await sendText(from, confirmMsg[state.lang] || confirmMsg.EN);
+        await sendText(CLINIC_NUMBER, `Callback Request!\n\nCustomer wants a call.\nWhatsApp: ${from}\nNumber given: ${phoneMatch[0]}\nPlease call them back asap.`);
+        return;
+      }
+
       const reply = await getAIReply(from, messageText, currentDate, state.lang);
       await sendText(from, reply);
 
+      // Check if AI asked for phone number (callback flow)
+      if (reply.toLowerCase().includes('number') || reply.includes('\u0d28\u0d2e\u0d4d\u0d2a\u0d7c')) {
+        state.waitingForPhone = true;
+      }
+
+      // ── FIX 2: Booking complete — notify clinic ──
       if (isBookingComplete(reply)) {
+        console.log("Booking complete! Notifying clinic...");
         const details = await extractBookingDetails(from, from);
         await sendBookingNotification(details);
-        console.log("Booking notification sent!");
       }
     }
 
   } catch (err) { console.error("Webhook error:", err.message); }
 });
-
 app.get("/", (req, res) => res.json({ status: "ABCD Bot running" }));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`ABCD Bot running on port ${PORT}`));
