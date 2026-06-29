@@ -516,7 +516,28 @@ function getSystemPrompt(lang) {
   const langRule = lang === "ML"
     ? `LANGUAGE RULE: Reply ONLY in Malayalam script. Every single word must be in Malayalam. ZERO English or Manglish unless it is a brand name (ABCD, Keratin, Rs.) or proper noun. Never break this rule.`
     : lang === "MG"
-    ? `LANGUAGE RULE: Reply ONLY in Manglish — Malayalam words in English/Roman letters ONLY. Examples: "aanu", "undoo", "venam", "cheyyam", "mathi", "alle", "kitto", "ningalkku", "enthanu". ZERO Malayalam Unicode script. If unsure of a word use English instead.`
+    ? `LANGUAGE RULE: Reply ONLY in Manglish — natural spoken Kerala Malayalam written in English/Roman letters. ZERO Malayalam Unicode script.
+
+MANGLISH GRAMMAR — follow these rules strictly, this is NOT just word substitution into English sentences:
+1. Word order is Malayalam, not English. Verb comes LAST in the sentence. Example: "Ningalkku ethu time aanu vendath?" (NOT "Venam ningalkku ethu time?"). "Naale 11 AM aanu free." (NOT "Free aanu naale 11 AM.")
+2. Use "aanu"/"aanu?" for "is/is it", "und"/"undo?" for "have/is there", "venam"/"veno?" for "want/need", "pattum"/"pattumo?" for "can/possible", "mathi" for "okay/that's enough", "kazhinju" for "has passed/over", "ippo" for "now", "innu" for "today", "naale" for "tomorrow", "vaikunneram" for "evening", "raavile" for "morning".
+3. Common natural connectors: "but" → use "pakshe", "and" → just use a comma or "ennittu", "because" → keep "because" (commonly mixed in as-is by Malayalam speakers).
+4. Politeness particles matter: soften blunt statements where natural, e.g. "kittilla" can be softened to "kittumo ennu nokkatte" (let me check) instead of a flat no — keep tone warm, never abrupt or robotic.
+5. Keep English nouns for salon/technical terms (Keratin, Smoothening, booking, slot, AM/PM, Rs.) — do NOT translate these, that sounds unnatural. Only the grammar/structure should be Malayalam.
+6. Numbers, times, and prices stay in English/numeral form always: "11:30 AM", "Rs.4000".
+7. Avoid literal word-for-word English-to-Manglish translation — think in Malayalam sentence structure first, then write it in Roman letters.
+8. If unsure how to phrase something naturally in Manglish, prefer a simpler correct Manglish sentence over a complex incorrect one.
+
+GOOD EXAMPLES (study the structure, don't just copy):
+- "Sorry, morning slots ippo illa. Evening ethu time aanu vendath?"
+- "Keratin treatment cheyyan 6000 rupees aanu, hair length anusarich kooduthal varum."
+- "Ningalude appointment naale 11 AM ku fix aanu, samayam maattam venel parayoo."
+- "Onnu confirm cheyyatte, Kanhangad branch aano vendath?"
+
+BAD EXAMPLES (never write like this):
+- "Venam ningalkku evening time?" (wrong word order — verb must come last)
+- "Is morning slots available ippo?" (mixing English grammar structure with Malayalam words)
+- "Sorry undu, time kazhinju poyi already" (redundant, unnatural — just say "Sorry, time kazhinju")`
     : `LANGUAGE RULE: Reply ONLY in English.`;
 
   return `You are the AI assistant for ABCD Beauty Clinic & Salon, Kasaragod, Kerala.
@@ -587,7 +608,7 @@ GENTS MANI/PEDI: Same as ladies
 GROOM PACKAGES: Glow Groom Rs.3700, Gold Glow Up Rs.5000, Booster custom price`;
 }
 // ─── GET AI REPLY ─────────────────────────────────────────────────────────────
-async function getAIReply(userPhone, userMessage, currentDate, lang) {
+async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang) {
   if (!conversations[userPhone]) conversations[userPhone] = [];
   conversations[userPhone].push({ role: "user", content: userMessage });
   if (conversations[userPhone].length > MAX_HISTORY) conversations[userPhone] = conversations[userPhone].slice(-MAX_HISTORY);
@@ -597,7 +618,7 @@ async function getAIReply(userPhone, userMessage, currentDate, lang) {
       model: "google/gemini-2.0-flash",
       max_tokens: 500,
       messages: [
-        { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)` },
+        { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)\nCURRENT TIME RIGHT NOW: ${currentTime} (IST) — use this as the real clock. Never guess or estimate the time. If a slot's time has already passed today based on this, say it is unavailable; otherwise treat it as available.` },
         ...conversations[userPhone],
       ],
     });
@@ -661,6 +682,99 @@ async function extractBookingDetails(userPhone, customerPhone) {
   }
 }
 
+// ─── SEND BOOKING FORM ────────────────────────────────────────────────────────
+// Sends a fill-in-the-blanks template the customer can copy, edit, and send back.
+function bookingFormTemplate(lang, serviceName) {
+  const svc = serviceName ? (SERVICE_INFO[serviceName]?.name || "") : "";
+  if (lang === "ML") {
+    return "ദയവായി ഈ ഫോം പൂരിപ്പിച്ച് തിരികെ അയക്കൂ 😊\n\n"
+      + "പേര്: \n"
+      + "സ്ഥലം (Cherkala / Kanhangad): \n"
+      + "സർവീസ്: " + svc + "\n"
+      + "തീയതി: \n"
+      + "സമയം: \n"
+      + "സെക്ഷൻ (Ladies/Gents): ";
+  }
+  if (lang === "MG") {
+    return "Please ee form fill cheythu reply cheyyo 😊\n\n"
+      + "Per: \n"
+      + "Location (Cherkala / Kanhangad): \n"
+      + "Service: " + svc + "\n"
+      + "Date: \n"
+      + "Time: \n"
+      + "Section (Ladies/Gents): ";
+  }
+  return "Please fill this form and send it back to us 😊\n\n"
+    + "Name: \n"
+    + "Location (Cherkala / Kanhangad): \n"
+    + "Service: " + svc + "\n"
+    + "Date: \n"
+    + "Time: \n"
+    + "Section (Ladies/Gents): ";
+}
+
+async function sendBookingForm(to, lang, serviceName) {
+  const l = lang || "EN";
+  await sendText(to, bookingFormTemplate(l, serviceName));
+  return true;
+}
+
+// ─── BOOKING FORM REPLY DETECTION ─────────────────────────────────────────────
+// True if the incoming text looks like a filled-out copy of the form above
+// (i.e. it contains at least 2 of the label keywords, in any language).
+function isBookingFormReply(text) {
+  if (!text || typeof text !== "string") return false;
+  const t = text.toLowerCase();
+  const labelHits = [
+    /name|per\b|പേര്/,
+    /location|സ്ഥലം/,
+    /service|സർവീസ്/,
+    /date|തീയതി/,
+    /time|സമയം/,
+    /section|സെക്ഷൻ/
+  ].filter(rx => rx.test(t)).length;
+  return labelHits >= 2 && t.includes(":");
+}
+
+// ─── PARSE BOOKING FORM REPLY ─────────────────────────────────────────────────
+// Pulls "Label: value" pairs out of the customer's filled-in form (any of the
+// 3 languages/scripts used in the template), tolerant of minor formatting.
+function parseBookingFormReply(text) {
+  const result = { name: "", location: "", service: "", date: "", time: "", section: "", phone: "" };
+  const lines = text.split(/\n|,(?=\s*[A-Za-zഀ-ൿ])/).map(l => l.trim()).filter(Boolean);
+
+  const fieldMap = [
+    { key: "name", rx: /^(name|per|പേര്)\s*[:\-]\s*(.+)$/i },
+    { key: "location", rx: /^(location|സ്ഥലം)\s*[:\-]\s*(.+)$/i },
+    { key: "service", rx: /^(service|സർവീസ്)\s*[:\-]\s*(.+)$/i },
+    { key: "date", rx: /^(date|തീയതി)\s*[:\-]\s*(.+)$/i },
+    { key: "time", rx: /^(time|സമയം)\s*[:\-]\s*(.+)$/i },
+    { key: "section", rx: /^(section|സെക്ഷൻ)\s*[:\-]\s*(.+)$/i },
+  ];
+
+  for (const line of lines) {
+    for (const field of fieldMap) {
+      const m = line.match(field.rx);
+      if (m && m[2].trim()) {
+        result[field.key] = m[2].trim();
+      }
+    }
+  }
+  return result;
+}
+
+// ─── BOOKING COMPLETE DETECTION (AI free-text flow) ───────────────────────────
+// True once the AI's own confirmation message has gone out (it always uses this
+// exact phrase per the system prompt's BOOKING FLOW section).
+function isBookingComplete(aiReply) {
+  if (!aiReply || typeof aiReply !== "string") return false;
+  const r = aiReply.toLowerCase();
+  return r.includes("booking request received") ||
+    (r.includes("ബുക്കിംഗ്") && r.includes("ലഭിച്ചു")) ||
+    r.includes("booking request kittiyo") ||
+    (r.includes("thank you") && r.includes("booking"));
+}
+
 // ─── SEND MENU ────────────────────────────────────────────────────────────────
 async function sendMenu(to, menuId) {
   const menu = MENUS[menuId];
@@ -696,7 +810,7 @@ async function sendPostServiceButtons(to, lang) {
   };
   const btn1 = { EN: "Book Now", ML: "\u0d2c\u0d41\u0d15\u0d4d\u0d15\u0d4d \u0d1a\u0d46\u0d2f\u0d4d\u0d2f\u0d42", MG: "Book Cheyyam" };
   const btn2 = { EN: "More Services", ML: "\u0d2e\u0d31\u0d4d\u0d31\u0d4d \u0d38\u0d47\u0d35\u0d28\u0d19\u0d4d\u0d19\u0d7e", MG: "More Services" };
-  const btn3 = { EN: "Talk to Team", ML: "\u0d1f\u0d40\u0d2e\u0d3f\u0d28\u0d4b\u0d1f\u0d4d \u0d38\u0d02\u0d38\u0d3e\u0d30\u0d3f\u0d15\u0d4d\u0d15\u0d3e\u0d02", MG: "Team-nod Saari" };
+  const btn3 = { EN: "Talk to Team", ML: "\u0d1f\u0d40\u0d2e\u0d3f\u0d28\u0d4b\u0d1f\u0d4d \u0d38\u0d02\u0d38\u0d3e\u0d30\u0d3f\u0d15\u0d4d\u0d15\u0d3e\u0d02", MG: "Team-nod Samsarikkam" };
   const l = lang || 'EN';
   await sendButtons(to, texts[l] || texts.EN, [
     { id: "PSB_BOOK", title: btn1[l] || btn1.EN },
@@ -718,7 +832,13 @@ app.post("/webhook", async (req, res) => {
     const messageText = buttonId || body.message?.text || body.message || body.text || body.body;
 
     if (messageType === "audio") {
-      await sendText(from, "Sorry, voice messages support cheyyunilla. Please type cheyyoo! Or call: 7012121125");
+      const audioLang = userState[from]?.lang || "EN";
+      const audioMsg = {
+        EN: "Sorry, we can't support voice messages yet. Please type your message, or call us: 7012121125",
+        ML: "ക്ഷമിക്കണം, വോയ്സ് മെസ്സേജ് ഇപ്പോൾ സപ്പോർട്ട് ചെയ്യുന്നില്ല. ദയവായി ടൈപ്പ് ചെയ്യൂ, അല്ലെങ്കിൽ വിളിക്കൂ: 7012121125",
+        MG: "Sorry, voice message ippo support illa. Type cheythu parayoo, allenkil call cheyyoo: 7012121125"
+      };
+      await sendText(from, audioMsg[audioLang] || audioMsg.EN);
       return;
     }
     if (!messageText || (messageType !== "text" && messageType !== "interactive")) return;
@@ -731,8 +851,12 @@ app.post("/webhook", async (req, res) => {
     }
 
     const state = userState[from];
-    const currentDate = new Date().toLocaleDateString("en-IN", {
+    const nowIST = new Date();
+    const currentDate = nowIST.toLocaleDateString("en-IN", {
       weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Kolkata"
+    });
+    const currentTime = nowIST.toLocaleTimeString("en-IN", {
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata"
     });
 
     // ── FIX 6: Language switch detection at any stage ──
@@ -743,7 +867,7 @@ app.post("/webhook", async (req, res) => {
         const confirmMsg = {
           EN: "Switched to English! How can I help you? 😊",
           ML: "\u0d07\u0d28\u0d3f \u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d24\u0d4d\u0d24\u0d3f\u0d32\u0d4d \u0d2e\u0d31\u0d41\u0d2a\u0d1f\u0d3f \u0d05\u0d31\u0d3f\u0d2f\u0d3f\u0d15\u0d4d\u0d15\u0d3e\u0d02 😊",
-          MG: "Manglish-il aayittundo! Enthu help cheyyano? 😊"
+          MG: "Manglish-il aayi! Enthu help cheyyano? 😊"
         };
         await sendText(from, confirmMsg[switchLang]);
         return;
@@ -755,7 +879,7 @@ app.post("/webhook", async (req, res) => {
       if (buttonId === "LANG_EN" || buttonId === "LANG_ML" || buttonId === "LANG_MG") {
         state.lang = buttonId === "LANG_EN" ? "EN" : buttonId === "LANG_ML" ? "ML" : "MG";
         state.stage = "section";
-        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Enth section aano venam?" };
+        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Ethu section aanu venam?" };
         await sendButtons(from, texts[state.lang], [
           { id: "SEC_LADIES", title: "Ladies" },
           { id: "SEC_GENTS", title: "Gents" },
@@ -780,7 +904,7 @@ app.post("/webhook", async (req, res) => {
         else if (buttonId === "SEC_GENTS") await sendMenu(from, "GENTS_MAIN");
         else await sendMenu(from, "LADIES_MAIN");
       } else {
-        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Enth section aano venam?" };
+        const texts = { EN: "Which section are you looking for?", ML: "\u0d0f\u0d24\u0d4d \u0d38\u0d46\u0d15\u0d4d\u0d37\u0d7b \u0d06\u0d23\u0d4d \u0d35\u0d47\u0d23\u0d4d\u0d1f\u0d24\u0d4d?", MG: "Ethu section aanu venam?" };
         await sendButtons(from, texts[state.lang || "EN"], [
           { id: "SEC_LADIES", title: "Ladies" },
           { id: "SEC_GENTS", title: "Gents" },
@@ -874,6 +998,12 @@ app.post("/webhook", async (req, res) => {
         return;
       }
 
+      // If they were asked for the form but sent something else (a question,
+      // "ok", etc.), drop the waiting flag so normal AI replies still work.
+      if (state.waitingForBookingForm) {
+        state.waitingForBookingForm = false;
+      }
+
       // ── CALLBACK: phone number shared ──
       const phoneMatch = messageText.match(/[6-9]\d{9}/);
       if (phoneMatch && state.waitingForPhone) {
@@ -889,7 +1019,7 @@ app.post("/webhook", async (req, res) => {
       }
 
       // ── NORMAL AI REPLY ──
-      const reply = await getAIReply(from, messageText, currentDate, state.lang);
+      const reply = await getAIReply(from, messageText, currentDate, currentTime, state.lang);
       await sendText(from, reply);
 
       // Track if AI asked for phone number
@@ -913,7 +1043,26 @@ app.post("/webhook", async (req, res) => {
       }
     }
 
-  } catch (err) { console.error("Webhook error:", err.message); }
+  } catch (err) {
+    console.error("Webhook error:", err.message, err.stack);
+    // ── CRASH GUARD: never leave the customer with silence ──
+    try {
+      const from = req.body?.from || req.body?.sender || req.body?.phone;
+      if (from) {
+        // Don't leave a user stuck mid-flow because of an unexpected error
+        if (userState[from]) userState[from].waitingForBookingForm = false;
+        const lang = userState[from]?.lang || "EN";
+        const fallback = {
+          EN: "Sorry, something went wrong on our end. Please try again, or call us directly: 7012121125",
+          ML: "ക്ഷമിക്കണം, ഒരു technical issue ഉണ്ടായി. വീണ്ടും ശ്രമിക്കൂ, അല്ലെങ്കിൽ വിളിക്കൂ: 7012121125",
+          MG: "Sorry, oru technical issue undayi. Onnu koodi try cheyyo, allenkil call cheyyo: 7012121125"
+        };
+        await sendText(from, fallback[lang] || fallback.EN);
+      }
+    } catch (fallbackErr) {
+      console.error("Fallback reply also failed:", fallbackErr.message);
+    }
+  }
 });
 app.get("/", (req, res) => res.json({ status: "ABCD Bot running" }));
 const PORT = process.env.PORT || 3000;
