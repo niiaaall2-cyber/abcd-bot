@@ -529,6 +529,9 @@ PERSONALITY: Warm, friendly, specific. Max 3 sentences for simple questions. No 
 
 STRICT REPLY RULE: Only answer what the user actually asked. If they ask about keratin price, give only keratin price. If they ask about haircut, give only haircut info. Never give unrelated information in the same reply.
 
+OUT-OF-MENU SERVICES: If a user asks about a service not in your knowledge base, reply warmly directing them to call 7012121125 for details. Never make up prices or confirm availability for unknown services.
+
+OFFERS AND PROMOTIONS: If a user mentions any offer, discount, promotion, or deal they saw on Instagram or elsewhere, reply asking for their phone number so the team can call them back with the offer details. Example reply in English: "Sure! Could you share your number? Our team will call you back with all the offer details 😊". Never confirm or deny any specific offer yourself. Once they share their number, confirm the team will call back shortly.
 LOCATIONS:
 - Cherkala (Cherkkala), Kanhangad — GENTS ONLY
 - Kanhangad (main branch) — GENTS AND LADIES
@@ -793,8 +796,8 @@ app.post("/webhook", async (req, res) => {
       // ── FIX 3: Post-service buttons ──
       if (buttonId === "PSB_BOOK") {
         state.stage = "chat";
-        const reply = await getAIReply(from, "I want to book an appointment", currentDate, state.lang);
-        await sendText(from, reply);
+        state.waitingForBookingForm = true;
+        await sendBookingForm(from, state.lang, state.lastService);
         return;
       }
 
@@ -819,8 +822,8 @@ app.post("/webhook", async (req, res) => {
       // Book appointment
       if (buttonId === "CAT_BOOK") {
         state.stage = "chat";
-        const reply = await getAIReply(from, "I want to book an appointment", currentDate, state.lang);
-        await sendText(from, reply);
+        state.waitingForBookingForm = true;
+        await sendBookingForm(from, state.lang, state.lastService);
         return;
       }
 
@@ -840,36 +843,73 @@ app.post("/webhook", async (req, res) => {
         return;
       }
 
-      // ── FIX 2 & 4: Free text in chat ──
+      // ── FREE TEXT IN CHAT ──
       state.stage = "chat";
 
-      // Check for phone number shared (callback) 
+      // ── BOOKING FORM REPLY: user sent back filled form ──
+      if (state.waitingForBookingForm && isBookingFormReply(messageText)) {
+        state.waitingForBookingForm = false;
+        const formData = parseBookingFormReply(messageText);
+        formData.phone = formData.phone || from;
+
+        // Confirm to customer
+        const confirmMsg = {
+          EN: "Thank you " + (formData.name || "") + "! ✅ Your booking request has been received. Our team will contact you shortly to confirm your appointment. For urgent bookings call 7012121125 😊",
+          ML: "നന്ദി " + (formData.name || "") + "! ✅ നിങ്ങളുടെ ബുക്കിംഗ് request ലഭിച്ചു. ഞങ്ങളുടെ ടീം ഉടൻ confirm ചെയ്യുന്നതാണ്. Urgent ആണെങ്കിൽ 7012121125 വിളിക്കൂ 😊",
+          MG: "Nandi " + (formData.name || "") + "! ✅ Ningalude booking request kittiyo. Njangalude team undane confirm cheyyum. Urgent aanel 7012121125 call cheyyoo 😊"
+        };
+        await sendText(from, confirmMsg[state.lang] || confirmMsg.EN);
+
+        // Notify clinic with formatted booking
+        const clinicMsg = "New Booking Request!\n\n" +
+          "Name                   : " + (formData.name || "?") + "\n" +
+          "Date of service   : " + (formData.date || "?") + "\n" +
+          "Service name      : " + (formData.service || "?") + "\n" +
+          "Time                     : " + (formData.time || "?") + "\n" +
+          "Location              : " + (formData.location || "?") + "\n" +
+          "Contact number : " + (formData.phone || from) + "\n" +
+          "WhatsApp           : " + from;
+        await sendText(CLINIC_NUMBER, clinicMsg);
+        console.log("Booking form notification sent to clinic!");
+        return;
+      }
+
+      // ── CALLBACK: phone number shared ──
       const phoneMatch = messageText.match(/[6-9]\d{9}/);
       if (phoneMatch && state.waitingForPhone) {
         state.waitingForPhone = false;
         const confirmMsg = {
-          EN: "Perfect! Our team will call you back shortly \ud83d\ude0a",
-          ML: "\u0d28\u0d28\u0d4d\u0d28\u0d3e\u0d2f\u0d3f! \u0d1e\u0d19\u0d4d\u0d19\u0d33\u0d41\u0d1f\u0d46 \u0d1f\u0d40\u0d02 \u0d09\u0d1f\u0d7b \u0d35\u0d3f\u0d33\u0d3f\u0d15\u0d4d\u0d15\u0d41\u0d28\u0d4d\u0d28\u0d24\u0d3e\u0d23\u0d4d \ud83d\ude0a",
-          MG: "Nannayyi! Team undane call cheyyum \ud83d\ude0a"
+          EN: "Perfect! Our team will call you back shortly 😊",
+          ML: "നന്നായി! ഞങ്ങളുടെ ടീം ഉടൻ വിളിക്കുന്നതാണ് 😊",
+          MG: "Nannayyi! Team undane call cheyyum 😊"
         };
         await sendText(from, confirmMsg[state.lang] || confirmMsg.EN);
-        await sendText(CLINIC_NUMBER, `Callback Request!\n\nCustomer wants a call.\nWhatsApp: ${from}\nNumber given: ${phoneMatch[0]}\nPlease call them back asap.`);
+        await sendText(CLINIC_NUMBER, "Callback Request!\n\nCustomer wants a call.\nWhatsApp: " + from + "\nNumber given: " + phoneMatch[0] + "\nPlease call them back asap.");
         return;
       }
 
+      // ── NORMAL AI REPLY ──
       const reply = await getAIReply(from, messageText, currentDate, state.lang);
       await sendText(from, reply);
 
-      // Check if AI asked for phone number (callback flow)
-      if (reply.toLowerCase().includes('number') || reply.includes('\u0d28\u0d2e\u0d4d\u0d2a\u0d7c')) {
+      // Track if AI asked for phone number
+      if (reply.toLowerCase().includes("number") || reply.includes("നമ്പർ") || reply.includes("nmber")) {
         state.waitingForPhone = true;
       }
 
-      // ── FIX 2: Booking complete — notify clinic ──
+      // Booking confirmed via AI flow
       if (isBookingComplete(reply)) {
-        console.log("Booking complete! Notifying clinic...");
+        console.log("Booking complete via AI flow! Notifying clinic...");
         const details = await extractBookingDetails(from, from);
-        await sendBookingNotification(details);
+        const clinicMsg = "New Booking Request!\n\n" +
+          "Name                   : " + details.name + "\n" +
+          "Date of service   : " + details.date + "\n" +
+          "Service name      : " + details.service + "\n" +
+          "Time                     : " + details.time + "\n" +
+          "Location              : " + details.location + "\n" +
+          "Contact number : " + details.phone + "\n" +
+          "WhatsApp           : " + from;
+        await sendText(CLINIC_NUMBER, clinicMsg);
       }
     }
 
