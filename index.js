@@ -520,7 +520,7 @@ function getSystemPrompt(lang) {
 
 MANGLISH GRAMMAR — follow these rules strictly, this is NOT just word substitution into English sentences:
 1. Word order is Malayalam, not English. Verb comes LAST in the sentence. Example: "Ningalkku ethu time aanu vendath?" (NOT "Venam ningalkku ethu time?"). "Naale 11 AM aanu free." (NOT "Free aanu naale 11 AM.")
-2. Use "aanu"/"aanu?" for "is/is it", "und"/"undo?" for "have/is there", "venam"/"veno?" for "want/need", "pattum"/"pattumo?" for "can/possible", "mathi" for "okay/that's enough", "kazhinju" for "has passed/over", "ippo" for "now", "innu" for "today", "naale" for "tomorrow", "vaikunneram" for "evening", "raavile" for "morning".
+2. Use "aanu"/"aano?" for "is/is it", "und"/"undo?" for "have/is there", "venam"/"veno?" for "want/need", "pattum"/"pattumo?" for "can/possible", "mathi" for "okay/that's enough", "kazhinju" for "has passed/over", "ippo" for "now", "innu" for "today", "naale" for "tomorrow", "vaikunneram" for "evening", "raavile" for "morning".
 3. Common natural connectors: "but" → use "pakshe", "and" → just use a comma or "ennittu", "because" → keep "because" (commonly mixed in as-is by Malayalam speakers).
 4. Politeness particles matter: soften blunt statements where natural, e.g. "kittilla" can be softened to "kittumo ennu nokkatte" (let me check) instead of a flat no — keep tone warm, never abrupt or robotic.
 5. Keep English nouns for salon/technical terms (Keratin, Smoothening, booking, slot, AM/PM, Rs.) — do NOT translate these, that sounds unnatural. Only the grammar/structure should be Malayalam.
@@ -552,7 +552,7 @@ STRICT REPLY RULE: Only answer what the user actually asked. If they ask about k
 
 OUT-OF-MENU SERVICES: If a user asks about a service not in your knowledge base, reply warmly directing them to call 7012121125 for details. Never make up prices or confirm availability for unknown services.
 
-OFFERS AND PROMOTIONS: If a user mentions any offer, discount, promotion, or deal they saw on Instagram or elsewhere, reply asking for their phone number so the team can call them back with the offer details. Example reply in English: "Sure! Could you share your number? Our team will call you back with all the offer details 😊". Never confirm or deny any specific offer yourself. Once they share their number, confirm the team will call back shortly.
+OFFERS AND PROMOTIONS: If a user mentions any offer, discount, promotion, or deal they saw on Instagram or elsewhere, reply asking for their phone number so the team can call them back with the offer details. Example reply in English: "Sure! Could you share your number? Our team will call you back with all the offer details 😊". Never confirm or deny any specific offer yourself. Once they share their number, confirm the team will call back shortly. IMPORTANT: If the conversation history already shows a phone number was given and confirmed (look for "(Internal note: phone number already received and confirmed...)" or a similar earlier confirmation), do NOT ask for the number again — just acknowledge and move on naturally, e.g. "No problem, our team already has your number and will call you soon 😊".
 LOCATIONS:
 - Cherkala (Cherkkala), Kanhangad — GENTS ONLY
 - Kanhangad (main branch) — GENTS AND LADIES
@@ -1013,8 +1013,17 @@ app.post("/webhook", async (req, res) => {
           ML: "നന്നായി! ഞങ്ങളുടെ ടീം ഉടൻ വിളിക്കുന്നതാണ് 😊",
           MG: "Nannayyi! Team undane call cheyyum 😊"
         };
-        await sendText(from, confirmMsg[state.lang] || confirmMsg.EN);
+        const sentConfirm = confirmMsg[state.lang] || confirmMsg.EN;
+        await sendText(from, sentConfirm);
         await sendText(CLINIC_NUMBER, "Callback Request!\n\nCustomer wants a call.\nWhatsApp: " + from + "\nNumber given: " + phoneMatch[0] + "\nPlease call them back asap.");
+
+        // Record this exchange in AI history too, so later turns (e.g. "Ok")
+        // know the number was already given and confirmed — and won't re-ask.
+        if (!conversations[from]) conversations[from] = [];
+        conversations[from].push({ role: "user", content: messageText });
+        conversations[from].push({ role: "assistant", content: sentConfirm + " (Internal note: phone number already received and confirmed — do not ask for it again unless the user starts a new, separate request.)" });
+        if (conversations[from].length > MAX_HISTORY) conversations[from] = conversations[from].slice(-MAX_HISTORY);
+
         return;
       }
 
@@ -1022,8 +1031,13 @@ app.post("/webhook", async (req, res) => {
       const reply = await getAIReply(from, messageText, currentDate, currentTime, state.lang);
       await sendText(from, reply);
 
-      // Track if AI asked for phone number
-      if (reply.toLowerCase().includes("number") || reply.includes("നമ്പർ") || reply.includes("nmber")) {
+      // Track if AI asked for phone number (look for it being requested, not just mentioned)
+      const r = reply.toLowerCase();
+      const askedForPhone =
+        (r.includes("share your number") || r.includes("share their number") ||
+         r.includes("phone number") || r.includes("your number") ||
+         reply.includes("നമ്പർ") || r.includes("nmber") || r.includes("tharamo") || r.includes("share cheyy"));
+      if (askedForPhone) {
         state.waitingForPhone = true;
       }
 
