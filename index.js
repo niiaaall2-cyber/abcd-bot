@@ -207,6 +207,8 @@ const SERVICE_INFO = {
   'SVC_GROOM_GLOW': { name: 'Glow Groom Package', price: 'Rs.3700 (was Rs.4500)', benefits: 'Complete groom package with Hair Spa + Facial + Cutting & Shaving complimentary. Hair spa gives you healthy, shiny hair. Facial gives event-ready glowing skin. Fresh cut finishes the look. Save Rs.800 — the most popular groom package at ABCD.' },
   'SVC_GROOM_GOLD': { name: 'Gold Glow Up Package', price: 'Rs.5000 (was Rs.5500)', benefits: 'Premium groom preparation with Luxury Hair Spa + Premium Facial + Cutting & Shaving complimentary. Upgraded products and techniques for men who want the absolute best for their most important day. Save Rs.500 vs individual pricing.' },
   'SVC_GROOM_BOOSTER': { name: 'Booster Glow Up Package', price: 'Price on request — fully customizable', benefits: 'The most comprehensive groom package — Facial Gold Glow Up + Cutting & Shaving complimentary + your choice of Keratin/Botox, Manicure/Pedicure, Smoothening, or Hair Spa. Build the perfect grooming package for your specific needs. Call 7012121125 for a custom quote tailored to you.' },
+  'SVC_MAKEOVER_LADIES': { name: 'Ladies Makeover', price: 'Price depends on requirements', benefits: 'ABCD offers professional makeover services including Bridal Make-Up, Party Make-Up, and Reception Make-Up. Each makeover is fully customized to the client — style, look, duration, and products are all tailored to your event. Pricing depends on the type of event and requirements. Our team will give you a detailed quote after understanding what you need.' },
+  'SVC_MAKEOVER_GENTS': { name: 'Gents Makeover', price: 'Price depends on requirements', benefits: 'Professional groom makeover services including Groom Makeup, Night Reception Makeup, and Nikkah Makeup. Fully customized to your event requirements. Pricing is discussed directly with the team. Call 7012121125 for details and to discuss your specific needs.' },
 };
 
 // ─── MENU DEFINITIONS ─────────────────────────────────────────────────────────
@@ -215,14 +217,14 @@ const MENUS = {
   "LADIES_MAIN": { title: "Ladies services:", btn: "View Services", rows: [
     { id: "LADIES_HAIRTREAT", title: "Hair Treatments", description: "Smoothening, Keratin, Spa..." },
     { id: "LADIES_HAIRCUT", title: "Haircut & Styling", description: "All haircut styles..." },
-    { id: "LADIES_COLOUR", title: "Hair Colour", description: "Colour, Highlights, Balayage..." },
+    { id: "LADIES_COLOUR", title: "Hair Colour / Dye", description: "Colour, Highlights, Balayage..." },
     { id: "LADIES_SKIN", title: "Skin Treatment", description: "Facials, Hydra, Cleanup..." },
     { id: "LADIES_FACETREAT", title: "Face Treatment", description: "Cleanup, De-Tan, Bleach..." },
     { id: "LADIES_KOREAN", title: "Korean Clinical", description: "Laser, IPL, BB Glow..." },
     { id: "LADIES_WAXING", title: "Waxing", description: "Reca Wax, Brazilian Wax..." },
     { id: "LADIES_MANIPEDI", title: "Manicure & Pedicure", description: "Ordinary, Classic, Premium" },
     { id: "LADIES_BRIDAL", title: "Bridal Package", description: "Silver, Platinum, Diamond" },
-    { id: "CAT_BOOK", title: "Book Appointment", description: "Schedule a visit" },
+    { id: "SVC_MAKEOVER_LADIES", title: "Makeover", description: "Bridal, Party, Reception" },
   ]},
   // GENTS MAIN
   "GENTS_MAIN": { title: "Gents services:", btn: "View Services", rows: [
@@ -236,6 +238,7 @@ const MENUS = {
     { id: "GENTS_KOREAN", title: "Korean Clinical", description: "Laser, IPL, BB Glow..." },
     { id: "GENTS_MANIPEDI", title: "Manicure & Pedicure", description: "Ordinary, Classic, Premium" },
     { id: "GENTS_GROOM", title: "Groom Package", description: "Glow Groom, Gold Glow Up..." },
+    { id: "SVC_MAKEOVER_GENTS", title: "Makeover", description: "Groom, Reception, Nikkah" },
   ]},
   // LADIES HAIR TREATMENTS
   "LADIES_HAIRTREAT": { title: "Hair Treatments:", btn: "Select", rows: [
@@ -550,7 +553,18 @@ PERSONALITY: Warm, friendly, specific. Max 3 sentences for simple questions. No 
 
 STRICT REPLY RULE: Only answer what the user actually asked. If they ask about keratin price, give only keratin price. If they ask about haircut, give only haircut info. Never give unrelated information in the same reply.
 
-OUT-OF-MENU SERVICES: If a user asks about a service not in your knowledge base, reply warmly directing them to call 7012121125 for details. Never make up prices or confirm availability for unknown services.
+MAKEOVER SERVICES (Ladies): Bridal Make-Up, Party Make-Up, Reception Make-Up — price depends on client requirements. For makeover enquiries always say price depends on requirements and ask for their phone number so team can give a proper quote.
+MAKEOVER SERVICES (Gents): Groom Makeup, Night Reception Makeup, Nikkah Makeup — price depends on client requirements.
+ABCD SPECIAL PACKAGE: Includes Bridal/Groom Package + Makeover + Costume + Event + Photography + Videography — full event package, price on request, call 7012121125.
+HAIR DYE = HAIR COLOUR. If user says "hair dye" treat it exactly as "hair colour". Ladies Global Rs.2200, Gents Gray Coverage Rs.800+.
+HAIR COLOUR also includes: Henna, temporary colour, fashion colours — if asked about specific types not in list, collect their number for callback.
+
+OUT-OF-MENU SERVICES: If a user asks about a service not clearly in your knowledge base:
+1. Do NOT say you don't know or make up prices
+2. Say you will connect them with the team who can help
+3. Ask for their phone number: "Could you share your number? Our team will call you back with the details 😊"
+4. If they don't share a number after being asked, give the clinic number: "You can also reach our team directly at 7012121125 😊"
+Never make up prices or confirm availability for unknown services.
 
 OFFERS AND PROMOTIONS: If a user mentions any offer, discount, promotion, or deal they saw on Instagram or elsewhere, reply asking for their phone number so the team can call them back with the offer details. Example reply in English: "Sure! Could you share your number? Our team will call you back with all the offer details 😊". Never confirm or deny any specific offer yourself. Once they share their number, confirm the team will call back shortly. IMPORTANT: If the conversation history already shows a phone number was given and confirmed (look for "(Internal note: phone number already received and confirmed...)" or a similar earlier confirmation), do NOT ask for the number again — just acknowledge and move on naturally, e.g. "No problem, our team already has your number and will call you soon 😊".
 LOCATIONS:
@@ -615,14 +629,21 @@ async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang
 
   try {
     const response = await ai.chat.completions.create({
-      model: "google/gemini-2.0-flash",
+      model: "google/gemini-2.0-flash-lite",
       max_tokens: 500,
       messages: [
         { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)\nCURRENT TIME RIGHT NOW: ${currentTime} (IST) — use this as the real clock. Never guess or estimate the time. If a slot's time has already passed today based on this, say it is unavailable; otherwise treat it as available.` },
         ...conversations[userPhone],
       ],
     });
-    const reply = response.choices[0].message.content;
+    let reply = response.choices[0].message.content;
+    // Strip any thinking/reasoning leaks from the model
+    reply = reply.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "").trim();
+    reply = reply.replace(/\(thinking\)[\s\S]*?(?=\n[A-Za-z\u0D00-\u0D7F]|$)/gi, "").trim();
+    reply = reply.replace(/^\(thinking\)[\s\S]*?\n\n/i, "").trim();
+    // Remove any lines starting with (thinking) or similar
+    reply = reply.split("\n").filter(line => !line.trim().toLowerCase().startsWith("(thinking)")).join("\n").trim();
+    if (!reply) reply = lang === "ML" ? "ക്ഷമിക്കണം, വീണ്ടും ചോദിക്കൂ 😊" : lang === "MG" ? "Sorry, onnu koodi parayoo 😊" : "Sorry, could you rephrase that? 😊";
     conversations[userPhone].push({ role: "assistant", content: reply });
     return reply;
   } catch (err) {
@@ -845,9 +866,20 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`From ${from} [${messageType}]: ${messageText}`);
 
-    // ── FIX 1: Never reset existing session — only init if truly new ──
+    // ── Session init — only for truly new users ──
     if (!userState[from]) {
-      userState[from] = { stage: "language", lang: null, section: null };
+      // If it's a button press, start fresh with language selection
+      // If it's a text message, go to chat directly with auto-detected language
+      if (buttonId) {
+        userState[from] = { stage: "language", lang: null, section: null };
+      } else {
+        // Returning user after server restart — detect language from message and go to chat
+        const msgLower = messageText.toLowerCase();
+        const hasML = /[\u0D00-\u0D7F]/.test(messageText);
+        const hasMG = !hasML && /\b(aanu|undoo|venam|cheyyam|mathi|alle|kitto|ningal|enthanu|ippo|naale|paranjaal|aano|cheyyano|pattum)\b/i.test(msgLower);
+        const detectedLang = hasML ? "ML" : hasMG ? "MG" : "EN";
+        userState[from] = { stage: "chat", lang: detectedLang, section: null };
+      }
     }
 
     const state = userState[from];
@@ -1015,7 +1047,9 @@ app.post("/webhook", async (req, res) => {
         };
         const sentConfirm = confirmMsg[state.lang] || confirmMsg.EN;
         await sendText(from, sentConfirm);
-        await sendText(CLINIC_NUMBER, "Callback Request!\n\nCustomer wants a call.\nWhatsApp: " + from + "\nNumber given: " + phoneMatch[0] + "\nPlease call them back asap.");
+        // Get last user question for context
+        const lastUserMsg = (conversations[from] || []).filter(m => m.role === "user").slice(-3).map(m => m.content).join(" | ");
+        await sendText(CLINIC_NUMBER, "Callback Request!\n\nWhatsApp: " + from + "\nNumber: " + phoneMatch[0] + "\nEnquiry: " + lastUserMsg + "\n\nPlease call them back asap.");
 
         // Record this exchange in AI history too, so later turns (e.g. "Ok")
         // know the number was already given and confirmed — and won't re-ask.
@@ -1024,6 +1058,19 @@ app.post("/webhook", async (req, res) => {
         conversations[from].push({ role: "assistant", content: sentConfirm + " (Internal note: phone number already received and confirmed — do not ask for it again unless the user starts a new, separate request.)" });
         if (conversations[from].length > MAX_HISTORY) conversations[from] = conversations[from].slice(-MAX_HISTORY);
 
+        return;
+      }
+
+      // ── EMOJI / SHORT MESSAGE HANDLING ──
+      const isEmojiOnly = /^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\s]+$/u.test(messageText.trim());
+      const isVeryShort = messageText.trim().length <= 2;
+      if (isEmojiOnly || isVeryShort) {
+        const emojiReply = {
+          EN: "Hi! 😊 How can I help you? You can ask about our services, prices, or book an appointment.",
+          ML: "ഹലോ! 😊 എന്ത് സഹായം വേണം? Services, price, അല്ലെങ്കിൽ booking — ചോദിക്കൂ.",
+          MG: "Hello! 😊 Enthu help venam? Services, price, booking — chodicho!"
+        };
+        await sendText(from, emojiReply[state.lang] || emojiReply.EN);
         return;
       }
 
