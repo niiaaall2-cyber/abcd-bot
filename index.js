@@ -629,7 +629,7 @@ async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang
 
   try {
     const response = await ai.chat.completions.create({
-      model: "google/gemini-2.0-flash-lite",
+      model: "google/gemini-2.0-flash",
       max_tokens: 500,
       messages: [
         { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)\nCURRENT TIME RIGHT NOW: ${currentTime} (IST) — use this as the real clock. Never guess or estimate the time. If a slot's time has already passed today based on this, say it is unavailable; otherwise treat it as available.` },
