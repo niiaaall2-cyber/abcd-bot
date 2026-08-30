@@ -866,20 +866,9 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`From ${from} [${messageType}]: ${messageText}`);
 
-    // ── Session init — only for truly new users ──
+    // ── Session init — always start with language selection for new users ──
     if (!userState[from]) {
-      // If it's a button press, start fresh with language selection
-      // If it's a text message, go to chat directly with auto-detected language
-      if (buttonId) {
-        userState[from] = { stage: "language", lang: null, section: null };
-      } else {
-        // Returning user after server restart — detect language from message and go to chat
-        const msgLower = messageText.toLowerCase();
-        const hasML = /[\u0D00-\u0D7F]/.test(messageText);
-        const hasMG = !hasML && /\b(aanu|undoo|venam|cheyyam|mathi|alle|kitto|ningal|enthanu|ippo|naale|paranjaal|aano|cheyyano|pattum)\b/i.test(msgLower);
-        const detectedLang = hasML ? "ML" : hasMG ? "MG" : "EN";
-        userState[from] = { stage: "chat", lang: detectedLang, section: null };
-      }
+      userState[from] = { stage: "language", lang: null, section: null };
     }
 
     const state = userState[from];
@@ -948,6 +937,13 @@ app.post("/webhook", async (req, res) => {
 
     // ── STAGE: MENU / CHAT ──
     if (state.stage === "menu" || state.stage === "chat") {
+
+      // If in menu stage with no button — show service menu again
+      if (state.stage === "menu" && !buttonId) {
+        if (state.section === "SEC_GENTS") await sendMenu(from, "GENTS_MAIN");
+        else await sendMenu(from, "LADIES_MAIN");
+        return;
+      }
 
       // ── FIX 3: Post-service buttons ──
       if (buttonId === "PSB_BOOK") {
