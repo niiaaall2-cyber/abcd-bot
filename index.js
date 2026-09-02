@@ -627,12 +627,14 @@ async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang
   conversations[userPhone].push({ role: "user", content: userMessage });
   if (conversations[userPhone].length > MAX_HISTORY) conversations[userPhone] = conversations[userPhone].slice(-MAX_HISTORY);
 
+  // Retry up to 2 times on connection error
+  for (let attempt = 1; attempt <= 2; attempt++) {
   try {
     const response = await ai.chat.completions.create({
       model: "google/gemini-2.0-flash",
-      max_tokens: 500,
+      max_tokens: 600,
       messages: [
-        { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)\nCURRENT TIME RIGHT NOW: ${currentTime} (IST) — use this as the real clock. Never guess or estimate the time. If a slot's time has already passed today based on this, say it is unavailable; otherwise treat it as available.` },
+        { role: "system", content: getSystemPrompt(lang) + `\n\nTODAY: ${currentDate} (IST)\nCURRENT TIME RIGHT NOW: ${currentTime} (IST) — use this as the real clock.` },
         ...conversations[userPhone],
       ],
     });
@@ -647,11 +649,18 @@ async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang
     conversations[userPhone].push({ role: "assistant", content: reply });
     return reply;
   } catch (err) {
-    console.error("AI error:", err?.message);
-    return lang === "ML" ? "ക്ഷമിക്കണം, ഇപ്പോൾ സഹായിക്കാൻ കഴിയുന്നില്ല. വിളിക്കൂ: 7012121125"
-      : lang === "MG" ? "Sorry, ippo help cheyyaan pattunilla. Call cheyyoo: 7012121125"
-      : "Sorry, temporarily unavailable. Please call: 7012121125";
+    console.error(`AI error (attempt ${attempt}):`, err?.message);
+    if (attempt < 2) {
+      await new Promise(r => setTimeout(r, 1500)); // wait 1.5s then retry
+      continue;
+    }
+    // Both attempts failed
+    conversations[userPhone].pop(); // remove the user message that failed
+    return lang === "ML" ? "ക്ഷമിക്കണം, ഒരു നിമിഷം കഴിഞ്ഞ് വീണ്ടും ചോദിക്കൂ 😊 അല്ലെങ്കിൽ: 7012121125"
+      : lang === "MG" ? "Sorry, oru nimisham kazhinje try cheyyoo 😊 Allenkil: 7012121125"
+      : "Sorry, please try again in a moment 😊 Or call: 7012121125";
   }
+  } // end retry loop
 }
 
 // ─── SERVICE INFO REPLY ───────────────────────────────────────────────────────
@@ -1057,16 +1066,36 @@ app.post("/webhook", async (req, res) => {
         return;
       }
 
-      // ── EMOJI / SHORT MESSAGE HANDLING ──
-      const isEmojiOnly = /^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\s]+$/u.test(messageText.trim());
-      const isVeryShort = messageText.trim().length <= 2;
-      if (isEmojiOnly || isVeryShort) {
+      // ── SHORT MESSAGE / EMOJI HANDLING ──
+      const trimmed = messageText.trim();
+      const isEmojiOnly = /^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\s]+$/u.test(trimmed);
+      const isPunctOnly = /^[?!.،,؟\s]+$/.test(trimmed);
+
+      if (isEmojiOnly && trimmed.length <= 3) {
+        // Pure emoji with no text — ask how to help
         const emojiReply = {
-          EN: "Hi! 😊 How can I help you? You can ask about our services, prices, or book an appointment.",
-          ML: "ഹലോ! 😊 എന്ത് സഹായം വേണം? Services, price, അല്ലെങ്കിൽ booking — ചോദിക്കൂ.",
-          MG: "Hello! 😊 Enthu help venam? Services, price, booking — chodicho!"
+          EN: "😊 How can I help you? Ask about our services, prices, or book an appointment.",
+          ML: "😊 എന്ത് സഹായം വേണം? Services, price, അല്ലെങ്കിൽ booking — ചോദിക്കൂ.",
+          MG: "😊 Enthu help venam? Services, price, booking — chodicho!"
         };
         await sendText(from, emojiReply[state.lang] || emojiReply.EN);
+        return;
+      }
+
+      if (isPunctOnly) {
+        // User sent "?" or "!" — they want to continue/clarify the previous reply
+        // Send the last bot reply again or ask them to rephrase
+        const lastBotMsg = (conversations[from] || []).filter(m => m.role === "assistant").slice(-1)[0]?.content;
+        if (lastBotMsg) {
+          await sendText(from, lastBotMsg);
+        } else {
+          const clarifyMsg = {
+            EN: "Sorry, could you type your question? I'll be happy to help 😊",
+            ML: "ദയവായി ചോദ്യം type ചെയ്യൂ, ഞാൻ സഹായിക്കാം 😊",
+            MG: "Question type cheyyoo, help cheyyaam 😊"
+          };
+          await sendText(from, clarifyMsg[state.lang] || clarifyMsg.EN);
+        }
         return;
       }
 
