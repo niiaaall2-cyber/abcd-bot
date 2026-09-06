@@ -204,7 +204,7 @@ const SERVICE_INFO = {
   'SVC_G_PEDI_CLASSIC': { name: 'Classic Pedicure (Gents)', price: 'Rs.1300', benefits: 'Thorough 45-minute pedicure with heel clearing, scrub, and massage pack. Targets rough heels and dry skin — essential for men who stand or walk a lot. Feet feel genuinely comfortable and healthy after every session.' },
   'SVC_G_MANI_PREMIUM': { name: 'Premium Manicure (Gents)', price: 'Rs.1500', benefits: 'Luxurious 1-hour hand treatment with deep conditioning massage pack. Professional men know that groomed, healthy hands communicate attention to detail and self-care. The most comprehensive hand treatment we offer.' },
   'SVC_G_PEDI_PREMIUM': { name: 'Premium Pedicure (Gents)', price: 'Rs.2000', benefits: 'The ultimate 1-hour foot treatment — completely removes rough skin, heals cracked heels, and deeply moisturizes. Transforms the most neglected feet into healthy, comfortable, salon-quality feet. Highly recommended before any important occasion.' },
-  'SVC_GROOM_GLOW': { name: 'Glow Groom Package', price: 'Rs.3700 (was Rs.4500)', benefits: 'Complete groom package with Hair Spa + Facial + Cutting & Shaving complimentary. Hair spa gives you healthy, shiny hair. Facial gives event-ready glowing skin. Fresh cut finishes the look. Save Rs.800 — the most popular groom package at ABCD.' },
+  'SVC_GROOM_GLOW': { name: 'Glow Groom Package', price: 'Rs.4500', benefits: 'Our most popular groom package — includes a professional Hair Style to get you looking sharp. Facial and Haircut are complimentary with this package. Everything you need to look your absolute best on your special day. Book now and let our team take care of the rest.' },
   'SVC_GROOM_GOLD': { name: 'Gold Glow Up Package', price: 'Rs.5000 (was Rs.5500)', benefits: 'Premium groom preparation with Luxury Hair Spa + Premium Facial + Cutting & Shaving complimentary. Upgraded products and techniques for men who want the absolute best for their most important day. Save Rs.500 vs individual pricing.' },
   'SVC_GROOM_BOOSTER': { name: 'Booster Glow Up Package', price: 'Price on request — fully customizable', benefits: 'The most comprehensive groom package — Facial Gold Glow Up + Cutting & Shaving complimentary + your choice of Keratin/Botox, Manicure/Pedicure, Smoothening, or Hair Spa. Build the perfect grooming package for your specific needs. Call 7012121125 for a custom quote tailored to you.' },
   'SVC_MAKEOVER_LADIES': { name: 'Ladies Makeover', price: 'Price depends on requirements', benefits: 'ABCD offers professional makeover services including Bridal Make-Up, Party Make-Up, and Reception Make-Up. Each makeover is fully customized to the client — style, look, duration, and products are all tailored to your event. Pricing depends on the type of event and requirements. Our team will give you a detailed quote after understanding what you need.' },
@@ -508,7 +508,7 @@ const MENUS = {
   ]},
   // GROOM
   "GENTS_GROOM": { title: "Groom Packages:", btn: "Select", rows: [
-    { id: "SVC_GROOM_GLOW", title: "Glow Groom", description: "Rs.3700 (was Rs.4500)" },
+    { id: "SVC_GROOM_GLOW", title: "Glow Groom", description: "Rs.4500" },
     { id: "SVC_GROOM_GOLD", title: "Gold Glow Up", description: "Rs.5000 (was Rs.5500)" },
     { id: "SVC_GROOM_BOOSTER", title: "Booster Glow Up", description: "Custom - call us" },
   ]},
@@ -619,7 +619,7 @@ GENTS DANDRUFF: Basic Rs.1500+, Premium Rs.2500+
 GENTS COLOUR: Gray Coverage Rs.800+, Ammonia Free Rs.1000+, Beard Rs.300+, Fashion Rs.1500+, Cap Highlights Rs.2000+
 GENTS MASSAGE: Oil+Wash Rs.500, Normal Rs.300
 GENTS MANI/PEDI: Same as ladies
-GROOM PACKAGES: Glow Groom Rs.3700, Gold Glow Up Rs.5000, Booster custom price`;
+GROOM PACKAGES: Glow Groom Rs.4500 (includes Hair Style, Facial and Haircut complimentary), Gold Glow Up Rs.5000, Booster custom price`;
 }
 // ─── GET AI REPLY ─────────────────────────────────────────────────────────────
 async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang) {
