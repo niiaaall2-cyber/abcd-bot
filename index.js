@@ -407,12 +407,13 @@ const MENUS = {
     { id: "SVC_G_LUXURY_CUTSHAVE", title: "Cutting + Shaving + Wash", description: "Rs.500" },
   ]},
   // GENTS STYLING
-  "GENTS_STYLING": { title: "Hair Styling:", btn: "Select", rows: [
+    "GENTS_STYLING": { title: "Hair Styling:", btn: "Select", rows: [
     { id: "SVC_G_HAIRWASH", title: "Hair Wash", description: "Rs.100" },
     { id: "SVC_G_HAIRSETTING", title: "Hair Setting", description: "Rs.150" },
     { id: "SVC_G_BLOWDRY_SETTING", title: "Blow Dry + Setting", description: "Rs.200" },
     { id: "SVC_G_BLOWDRY_POWDER", title: "Blow Dry + Powder", description: "Rs.400" },
     { id: "SVC_G_BLOWDRY_FIBER", title: "Blow Dry + Fiber", description: "Rs.500" },
+    { id: "GENTS_HAIRSPA", title: "Hair Spa →", description: "Basic, Premium, Moroccan" },
   ]},
   // GENTS HAIR TREATMENTS
   "GENTS_HAIRTREAT": { title: "Hair Treatments:", btn: "Select", rows: [
