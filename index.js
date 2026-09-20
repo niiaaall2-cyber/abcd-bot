@@ -68,6 +68,25 @@ async function sendBookingNotification(details) {
 }
 
 // ─── SERVICE KNOWLEDGE BASE ───────────────────────────────────────────────────
+// ─── ACTIVE OFFERS (temporary pricing override) ──────────────────────────────
+// Set OFFERS_ACTIVE to false when the offer ends — no other changes needed.
+const OFFERS_ACTIVE = true;
+const ACTIVE_OFFERS = {
+  // LADIES
+  "SVC_L_SPA_NOURISHING": { offerPrice: "Rs.1200 (Haircut Complimentary)" },
+  "SVC_L_BOTOX": { offerPrice: "Rs.7000 (any hair length)" },
+  "SVC_L_SMOOTHENING": { offerPrice: "Rs.4000 (any hair length)" },
+  "SVC_L_HAIRIRONING": { offerPrice: "Rs.5000 (Permanent Blowdry, any length)" },
+  "SVC_L_CLEANUP_PREMIUM": { offerPrice: "Rs.1500 (Cleanup + D-Tan + Hairwash)" },
+  "SVC_L_FACIAL_PREMIUM": { offerPrice: "Rs.4000 (Premium Facial, D-Tan + Hairwash Complimentary)" },
+  // GENTS
+  "SVC_G_SPA_BASIC": { offerPrice: "Rs.1000 (Haircut Complimentary)" },
+  "SVC_G_BOTOX": { offerPrice: "Rs.3500" },
+  "SVC_G_SMOOTHENING": { offerPrice: "Rs.1000" },
+  "SVC_G_CLASSIC_CUTSHAVE": { offerPrice: "Rs.1500 (Cleanup + D-Tan, Haircut Complimentary)" },
+  "SVC_G_LUXURY_CUTSHAVE": { offerPrice: "Rs.3000 (Premium Facial + D-Tan, Haircut + Beard Complimentary)" },
+};
+
 const SERVICE_INFO = {
   'SVC_L_SMOOTHENING': { name: 'Smoothening', price: 'Rs.4000+ (depending on hair length)', benefits: 'Get permanently straight, frizz-free hair that lasts 4–6 months. No more daily styling — wake up with salon-smooth hair every single day. Takes 3–4 hours and uses premium products that keep your hair healthy and shiny.' },
   'SVC_L_KERATIN': { name: 'Keratin Treatment', price: 'Rs.6000+ (depending on hair length)', benefits: 'Eliminates frizz by up to 95% and makes your hair incredibly smooth, shiny, and easy to manage. Results last 3–5 months. Your blow-dry time literally cuts in half. Perfect for damaged, processed, or naturally frizzy hair.' },
@@ -573,12 +592,32 @@ LOCATIONS:
 - Kanhangad (main branch) — GENTS AND LADIES
 Malayalam spellings: ചേർക്കള and കാഞ്ഞങ്ങാഡ് only. NEVER ചേർത്തല.
 
-CONTACT: 7012121125 | Hours: Ladies 10AM-10PM, Gents 10AM-12AM | Open all 7 days
+WHEN USER ASKS FOR LOCATION / DIRECTIONS / MAP / WHERE ARE YOU: Always share this exact Google Maps link for the Kanhangad branch: https://maps.app.goo.gl/HB8JJjM8s6FsHYeQ9 (say this is the main branch location; if they specifically ask about Cherkala gents-only branch, tell them to call 7012121125 for that location, since we only have the Kanhangad map link).
+
+CONTACT: 7012121125
+
+TIMINGS — WHEN ASKED "what are your timings" / "when are you open" / general hours question, reply exactly: Ladies: 10AM to 10PM, Gents: 10AM to 12AM (midnight). If the customer has already booked an appointment, mention they can come at their booked time even outside these general hours — booked appointments are flexible. Open all 7 days.
 
 PRICE QUERIES:
 - Specific service price asked: give that service price only, clearly and directly.
 - Full category price list asked: give the complete list for that category only.
 - Never make up prices.
+
+ACTIVE OFFER RATES — LIMITED TIME (use these instead of the normal price for these exact services only, and ALWAYS say "offer rate" or "limited time offer rate" when quoting them, in the user's language):
+LADIES:
+- Hair Spa Nourishing: Rs.1200 (Haircut Complimentary) — offer rate
+- Hair Botox: Rs.7000 (any hair length) — offer rate
+- Smoothening: Rs.4000 (any hair length) — offer rate
+- Permanent Blowdry (any length): Rs.5000 — offer rate
+- Cleanup + D-Tan + Hairwash: Rs.1500 — offer rate
+- Premium Facial (D-Tan + Hairwash Complimentary): Rs.4000 — offer rate
+GENTS:
+- Hair Spa Basic (Haircut Complimentary): Rs.1000 — offer rate
+- Hair Botox: Rs.3500 — offer rate
+- Smoothening: Rs.1000 — offer rate
+- Cleanup + D-Tan (Haircut Complimentary): Rs.1500 — offer rate
+- Premium Facial + D-Tan (Haircut + Beard Complimentary): Rs.3000 — offer rate
+Do NOT apply "offer rate" wording to any other service — only the ones listed above. All other services use their normal price with no offer mention. These offer rates are temporary; if the team says the offer has ended, revert to normal prices for these services.
 
 BOOKING FLOW — HIGHEST PRIORITY:
 When user says yes to booking, or wants to book, or confirms they want an appointment — IMMEDIATELY start collecting details. Do not ask any other questions first.
