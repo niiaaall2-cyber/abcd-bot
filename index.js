@@ -566,7 +566,6 @@ BAD EXAMPLES (never write like this):
   return `You are the AI assistant for ABCD Beauty Clinic & Salon, Kasaragod, Kerala.
 
 ${langRule}
-
 LANGUAGE SWITCHING: If the user asks to switch language (e.g. "switch to English", "Malayalam il mathi", "change to Manglish", "English il paranjaal mathi"), switch to that language immediately for all future replies and confirm the switch.
 
 PERSONALITY: Warm, friendly, specific. Max 3 sentences for simple questions. No bullet points. Answer ONLY what the user asked — nothing extra.
@@ -638,28 +637,32 @@ When user asks to speak to team, get a call, or contact someone:
 - Then the system sends a notification to clinic automatically
 
 PRICES KNOWLEDGE:
-LADIES HAIRCUTS: U Cut Rs.400, V Cut Rs.400, Straight Cut Rs.300, Layer Cut Rs.600, Step Cut Rs.600, Feathered Cut Rs.700, Bob Cut Rs.700, Blend Cut Rs.600, Pixie Cut Rs.800, Inverted Bob Rs.800, Graduated Bob Rs.800
-KIDS: Layer Rs.600, Bob Rs.500, Butterfly Rs.700, Feather Rs.700, Baby Cut Rs.200-300
-LADIES COLOUR: Global Rs.2200, Touch Up Rs.1500, Highlights Rs.300/strip, Fashion Global Rs.3000+, Balayage Rs.4000+, Ombre Rs.3500+
-LADIES HAIR TREATMENTS: Smoothening Rs.4000, Keratin Rs.6000, Botox Rs.7000, Kera Smooth Rs.10000, Crown Smoothening Rs.3000, Route Touch Up Rs.3500, Nanoplasty Rs.8000+, Shine Infusion Rs.5000, Hair Ironing Rs.1000+, Tong Curls Rs.1500+
-LADIES HAIR SPA: Nourishing Rs.1200+, Protein Rs.2000, Moroccan Rs.2500
-LADIES DANDRUFF: Basic Rs.2000, Premium Rs.2500
-LADIES SKIN: Basic Facial Rs.1500, Premium Rs.2500, Luxury Rs.4000, Hydra Facial Rs.4000, Hydra Treatment Rs.5000, Hydra Premium Rs.8000
-LADIES FACE: Cleanup Basic Rs.600, Premium Rs.1000, De Tan Basic Rs.500, Premium Rs.1000, Glow Cleanup Rs.1500, Bleach Rs.400, Face Massage Rs.800+
-LADIES WAXING: Half Arm Rs.500, Half Leg Rs.700, Full Arm Rs.800, Full Leg Rs.1200, Full Body Rs.4000, Upper Lip Rs.150, Full Face Rs.500, Under Arms Rs.500
-LADIES MANI/PEDI: Ordinary Mani Rs.500/Pedi Rs.900, Classic Mani Rs.700/Pedi Rs.1300, Premium Mani Rs.1500/Pedi Rs.2000
-LADIES BRIDAL: Silver Rs.5999, Platinum Rs.9999, Diamond Rs.14999
-KOREAN/CLINICAL: Hydra Facial Rs.3500, Hydra Basic Rs.5000, Hydra Premium Rs.8000, Carbon Laser Rs.6000, IPL Rs.5500, IPL Hair Removal Rs.1500, Micro Needling Face/Hair Rs.6000, Mesotherapy Rs.4000, BB Glow Rs.6000, Chemical Peel Rs.2000+, Oxygeno Rs.6000, Skin Tightening Rs.3000, Tattoo Removal Rs.2500, Micro Blading Rs.10000/8000/4000, Lip Neutralizing Rs.4000, Lip Colouring Rs.6000, Eye Brow Shading Rs.4000
-GENTS HAIRCUT CLASSIC: Cut Rs.200, Beard Rs.200, Cut+Shave Rs.350
-GENTS HAIRCUT LUXURY: Cut Rs.300, Beard Rs.300, Cut+Shave+Wash Rs.500
-GENTS STYLING: Wash Rs.100, Setting Rs.150, Blow Dry+Setting Rs.200, Blow Dry+Powder Rs.400, Blow Dry+Fiber Rs.500
-GENTS HAIR TREATMENTS: Smoothening Rs.1500+, Keratin Rs.4000+, Botox Rs.5000+, Kera Smooth Rs.6000+, Curling Rs.4500+, Nanoplasty Rs.8000+, Shine Infusion Rs.5000
-GENTS HAIR SPA: Basic Rs.1200+, Premium Rs.1500+, Moroccan Rs.2000+
-GENTS DANDRUFF: Basic Rs.1500+, Premium Rs.2500+
-GENTS COLOUR: Gray Coverage Rs.800+, Ammonia Free Rs.1000+, Beard Rs.300+, Fashion Rs.1500+, Cap Highlights Rs.2000+
-GENTS MASSAGE: Oil+Wash Rs.500, Normal Rs.300
-GENTS MANI/PEDI: Same as ladies
-GROOM PACKAGES: Glow Groom Rs.4500 (includes Hair Style, Facial and Haircut complimentary), Gold Glow Up Rs.5000, Booster custom price`;
+LADIES HAIRCUTS: U Cut Rs.600, Straight Cut Rs.600, Layer Cut Rs.700, Step Cut Rs.700, Bob Cut Rs.700, Blend Cut Rs.700, Pixie Cut Rs.800, Inverted Bob Rs.800, Graduated Bob Rs.800, Butterfly Cut Rs.800
+LADIES KIDS CUT: Layer Rs.600, Bob Rs.500, Butterfly Rs.700, Feather Rs.700, U Cut Rs.500, Straight Cut Rs.500, Baby Cut (below 2yrs) Rs.200, Hair Wash+Setting Rs.500
+KIDS ABCD SPECIAL: Hair Spa Rs.800, Pedicure Rs.600, Manicure Rs.400, Face Massage Rs.500, Hair Colour per strip Rs.300
+LADIES HAIR TREATMENTS: Smoothening Rs.4500+, Crown Portion Rs.3000+, Root Touch Up Rs.3500, Permanent Blow Dry Rs.5500+, Keratin Rs.6000+, Botox Rs.7500+, Nanoplastia Rs.8000+, Kera Smooth Rs.10000+
+LADIES HAIR SPA: Hair Ironing Rs.1000+, Tongs Curls Rs.1500+, Nourishing Spa Rs.1500+, Repairing Spa Rs.1800+, Protein Spa Rs.2000+, Colouring Spa Rs.2500+, Keratin Spa Rs.3000+, Moroccan Spa Rs.3000+
+LADIES DANDRUFF: Dandruff Treatment Rs.2500+, Dandruff Spa Rs.3000+, Hair Fall Spa Rs.2500+
+LADIES COLOUR: Root Touch Up (Gray) Rs.1500+, Global Colour Rs.3000+, Highlights Rs.300+/strip, Highlights+Prelight Rs.400+, Ombre Rs.3500+, Balayage Rs.4000+
+WAXING (shared): Half Arm Rs.700, Half Leg Rs.900, Full Arm Rs.900, Full Leg Rs.1200, Full Body Rs.4000, Back & Front Rs.800, Upper Lip Rs.150, Forehead Rs.150, Sidelock Rs.150, Chin Rs.150, Full Face Rs.500, Underarms Rs.500
+THREADING (ladies): Eyebrow Rs.50, Upper Lip Rs.50, Forehead Rs.50, Chin Rs.50, Sidelock Rs.50, Full Face Rs.250, Razor Rs.250
+LADIES MANI/PEDI: Basic Mani Rs.700/Pedi Rs.1000, Classic Mani Rs.1000/Pedi Rs.1500, Premium Mani Rs.1500/Pedi Rs.2000, Only Cutting Falling Rs.200+
+LADIES SKIN CLEANUP: Cleanup Basic Rs.800, Premium Rs.1000, Glow Cleanup Rs.1500, D-Tan Cleanup Rs.1500, D-Tan Basic Rs.500, D-Tan Face&Neck Rs.600, D-Tan Premium Rs.1000, Foot D-Tan Rs.800, Full Arm D-Tan Rs.1000, Bleach Rs.500
+LADIES FACIALS: Mini Premium Rs.2500 (incl D-Tan), Premium Rs.3500 (incl D-Tan), Luxury Rs.4500 (incl D-Tan), Hydra Facial Rs.5000
+LADIES BRIDAL: Silver Rs.5000, Platinum Rs.6500, Diamond Rs.8000
+GENTS HAIRCUT CLASSIC: Haircut Rs.200, Beard Rs.200, Cutting & Shaving Rs.350
+GENTS HAIRCUT PREMIUM: Cutting (Hair Wash) Rs.300, Beard (Face Cleansing) Rs.300, Cutting & Beard (Wash & Cleansing) Rs.500
+GENTS STYLING: Hair Wash Rs.100, Hair Setting & Blow Dry Rs.150, Blow Dry with Hair Fibre Rs.400
+GENTS HAIR TREATMENTS: Smoothening Crown Rs.1500+, Smoothening Full Rs.2000+, Only Cream Rs.800+, Keratin Rs.4500+, Botox Rs.5000+, Nanoplastia Rs.5000+, Shine Fusion Rs.5500+, Kera Smooth Rs.6000+, Curling Rs.4500+
+GENTS HAIR SPA: Nourishing Rs.1200+, Repairing Rs.1500+, Protein Rs.1500+, Colouring Rs.1800+, Keratin Spa Rs.1800+, Moroccan Rs.1800+
+GENTS DANDRUFF: Dandruff Treatment Rs.1800+, Dandruff Spa Rs.2500+, Hair Fall Spa Rs.2500+
+GENTS COLOUR: Ammonia Free Rs.600+, Beard Colour (Ammonia Free) Rs.400+, Loreal/Schwarzkopf Rs.800+, Cap Highlights Rs.1500+, Fashion Colour Rs.2000+
+GENTS MASSAGE: Normal Rs.300, Oil Rs.500
+GENTS MANI/PEDI: Basic Mani Rs.700/Pedi Rs.1000, Classic Mani Rs.1000/Pedi Rs.1500, Premium Mani Rs.1500/Pedi Rs.2000, Only Cutting Falling Rs.200+
+GENTS SKIN CLEANUP: Same structure as ladies — Cleanup Basic Rs.800, Premium Rs.1000, Glow Cleanup Rs.1500, D-Tan Cleanup Rs.1500, D-Tan Basic Rs.500, D-Tan Face&Neck Rs.600, D-Tan Premium Rs.1000, Foot D-Tan Rs.800, Full Arm D-Tan Rs.1000, Bleach Rs.500
+GENTS FACIALS: Mini Premium Rs.2500 (incl D-Tan), Premium Rs.3500 (incl D-Tan), Luxury Rs.4500 (incl D-Tan), Groom Facial Rs.4500, Hydra Facial Rs.5000
+GENTS GROOM PACKAGE FACIALS: Silver Rs.5000 (Luxury Facial, Face&Neck D-Tan, Hand D-Tan, Haircut&Beard), Platinum Rs.6000 (Luxury Facial, Face&Neck D-Tan, Classic Pedicure, Haircut&Beard), Diamond Rs.7500 (Luxury/Hydra Facial, Face&Neck D-Tan, Hand D-Tan, Haircut&Beard, Premium Pedicure&Manicure)
+GROOM PACKAGES (STYLE): Glow Groom Rs.4500 (includes Hair Style, Facial and Haircut complimentary), Gold Glow Up Rs.5000, Booster custom price`;
 }
 // ─── GET AI REPLY ─────────────────────────────────────────────────────────────
 async function getAIReply(userPhone, userMessage, currentDate, currentTime, lang) {
@@ -889,7 +892,7 @@ async function sendPostServiceButtons(to, lang) {
   ]);
 }
 
-// ─── WEBHOOK ──────────────────────────────────────────────────────────────────
+// ─── WEBHOOK ───────────────────────
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
   try {
@@ -983,8 +986,7 @@ app.post("/webhook", async (req, res) => {
       }
       return;
     }
-
-    // ── STAGE: MENU / CHAT ──
+// ── STAGE: MENU / CHAT ──
     if (state.stage === "menu" || state.stage === "chat") {
 
       // If in menu stage with no button — show service menu again
@@ -1121,8 +1123,7 @@ app.post("/webhook", async (req, res) => {
         await sendText(from, emojiReply[state.lang] || emojiReply.EN);
         return;
       }
-
-      if (isPunctOnly) {
+if (isPunctOnly) {
         // User sent "?" or "!" — they want to continue/clarify the previous reply
         // Send the last bot reply again or ask them to rephrase
         const lastBotMsg = (conversations[from] || []).filter(m => m.role === "assistant").slice(-1)[0]?.content;
