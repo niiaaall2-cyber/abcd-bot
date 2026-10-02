@@ -566,6 +566,7 @@ BAD EXAMPLES (never write like this):
   return `You are the AI assistant for ABCD Beauty Clinic & Salon, Kasaragod, Kerala.
 
 ${langRule}
+
 LANGUAGE SWITCHING: If the user asks to switch language (e.g. "switch to English", "Malayalam il mathi", "change to Manglish", "English il paranjaal mathi"), switch to that language immediately for all future replies and confirm the switch.
 
 PERSONALITY: Warm, friendly, specific. Max 3 sentences for simple questions. No bullet points. Answer ONLY what the user asked — nothing extra.
@@ -892,7 +893,7 @@ async function sendPostServiceButtons(to, lang) {
   ]);
 }
 
-// ─── WEBHOOK ───────────────────────
+// ─── WEBHOOK ──────────────────────────────────────────────────────────────────
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
   try {
@@ -986,7 +987,8 @@ app.post("/webhook", async (req, res) => {
       }
       return;
     }
-// ── STAGE: MENU / CHAT ──
+
+    // ── STAGE: MENU / CHAT ──
     if (state.stage === "menu" || state.stage === "chat") {
 
       // If in menu stage with no button — show service menu again
@@ -1123,7 +1125,8 @@ app.post("/webhook", async (req, res) => {
         await sendText(from, emojiReply[state.lang] || emojiReply.EN);
         return;
       }
-if (isPunctOnly) {
+
+      if (isPunctOnly) {
         // User sent "?" or "!" — they want to continue/clarify the previous reply
         // Send the last bot reply again or ask them to rephrase
         const lastBotMsg = (conversations[from] || []).filter(m => m.role === "assistant").slice(-1)[0]?.content;
